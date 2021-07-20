@@ -280,6 +280,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             mTermuxTerminalViewClient.onResume();
 
         isOnResumeAfterOnCreate = false;
+
+        EditText view = (EditText)findViewById(R.id.terminal_toolbar_text_input);
+        if ((view != null) && (view.getVisibility() == View.VISIBLE)) {
+            view.requestFocus();
+        }
     }
 
     @Override
@@ -330,10 +335,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
     }
-
-
-
-
 
     /**
      * Part of the {@link ServiceConnection} interface. The service is bound with
@@ -485,7 +486,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
         terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
-        if (showNow && terminalToolbarViewPager.getCurrentItem() == 1) {
+        if (showNow && terminalToolbarViewPager.getCurrentItem() == 0) {
             // Focus the text input view if just revealed.
             findViewById(R.id.terminal_toolbar_text_input).requestFocus();
         }
