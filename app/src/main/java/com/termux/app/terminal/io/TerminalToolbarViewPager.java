@@ -14,7 +14,7 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ClickableSpan;
-import android.util.Log;
+import android.text.style.StyleSpan;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +22,6 @@ import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
@@ -34,7 +33,6 @@ import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.terminal.TerminalSession;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class TerminalToolbarViewPager {
@@ -44,13 +42,13 @@ public class TerminalToolbarViewPager {
         final TermuxActivity mActivity;
         final List<ApplicationInfo> mPackages = new ArrayList<>();
 
-        ApplicationInfo mSuggestedApplication;
+        ApplicationInfo mReadyApplication;
         String mSavedTextInput;
 
         public PageAdapter(TermuxActivity activity, String savedTextInput) {
             this.mActivity = activity;
             this.mSavedTextInput = savedTextInput;
-            this.scanPackages();
+            this.updatePackagesList();
         }
 
         @Override
@@ -72,6 +70,7 @@ public class TerminalToolbarViewPager {
                 layout = inflater.inflate(R.layout.view_terminal_toolbar_extra_keys, collection, false);
                 ExtraKeysView extraKeysView = (ExtraKeysView) layout;
                 extraKeysView.setTermuxTerminalViewClient(mActivity.getTermuxTerminalViewClient());
+                extraKeysView.setTermuxTerminalSessionClient(mActivity.getTermuxTerminalSessionClient());
                 mActivity.setExtraKeysView(extraKeysView);
                 extraKeysView.reload(mActivity.getProperties().getExtraKeysInfo());
 
@@ -82,33 +81,30 @@ public class TerminalToolbarViewPager {
 
             } else {
                 layout = inflater.inflate(R.layout.view_terminal_toolbar_text_input, collection, false);
-                final EditText source = layout.findViewById(R.id.terminal_toolbar_text_input);
-                final TextView dest = layout.findViewById(R.id.terminal_toolbar_text_input1);
+                final EditText editText = layout.findViewById(R.id.terminal_toolbar_text_input);
+                final TextView textView = layout.findViewById(R.id.terminal_toolbar_suggestion_applications_view);
 
                 if (mSavedTextInput != null) {
-                    source.setText(mSavedTextInput);
+                    editText.setText(mSavedTextInput);
                     mSavedTextInput = null;
                 }
 
-                dest.setMovementMethod(LinkMovementMethod.getInstance());
-                dest.setHighlightColor(Color.TRANSPARENT);
-                dest.setTextColor(Color.RED);
-                dest.setVisibility(View.INVISIBLE);
-
-                source.addTextChangedListener(new TextWatcher(){
+                textView.setMovementMethod(LinkMovementMethod.getInstance());
+                editText.addTextChangedListener(new TextWatcher(){
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     }
 
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        if (s.length() <= 0) {
-                            dest.setText("");
-                            dest.setVisibility(View.INVISIBLE);
-                            return;
-                        }
+                        textView.setText("");
+                        textView.setVisibility(View.INVISIBLE);
 
-                        updateSuggestionList(s, source, dest);
+                        SpannableStringBuilder builder = buildSuggestionList(s);
+                        if ((s.length() != 0) && (builder.length() > 0)) {
+                            textView.setText(builder);
+                            textView.setVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override
@@ -116,20 +112,20 @@ public class TerminalToolbarViewPager {
                     }
                 });
 
-                source.setOnEditorActionListener((v, actionId, event) -> {
-                    String textToSend = source.getText().toString();
+                editText.setOnEditorActionListener((v, actionId, event) -> {
+                    String textToSend = editText.getText().toString();
+
+                    if (textToSend.length() == 0) return false;
 
                     if (handleSpecialCommand(textToSend)
                         || tryToOpenUrl(textToSend)
-                        || tryToOpenSuggestionApplication(this.mSuggestedApplication)
-                        || sendCommandToTerminal(textToSend)) {
-                        source.setText("");
+                        || tryToOpenSuggestionApplication(this.mReadyApplication)
+                        || sendCommandToTerminal(textToSend + '\r')) {
+                        editText.setText("");
                     }
 
                     return true;
                 });
-
-                source.requestFocus();
             }
 
             collection.addView(layout);
@@ -144,8 +140,10 @@ public class TerminalToolbarViewPager {
         private boolean handleSpecialCommand(String command) {
             if (command == null) return false;
 
+            // used to refresh package list for some case such as  new package installed,
+            // package got uninstalled, etc.,
             if (command.contentEquals("/update")) {
-                scanPackages();
+                updatePackagesList();
                 return true;
             }
 
@@ -167,10 +165,8 @@ public class TerminalToolbarViewPager {
         }
 
         private boolean tryToOpenSuggestionApplication(ApplicationInfo info) {
-            if (info == null)
-                return false;
+            if (info == null) return false;
 
-            Log.w(getClass().getCanonicalName(), "-- try to open: " + info.processName);
             final PackageManager pm = mActivity.getPackageManager();
             if (pm != null) {
                 final Intent intent = pm.getLaunchIntentForPackage(info.processName);
@@ -178,7 +174,6 @@ public class TerminalToolbarViewPager {
                     mActivity.startActivity(intent);
                     return true;
                 }
-                Log.w(getClass().getCanonicalName(), "-- no intent found for: " + info.processName);
             }
 
             return false;
@@ -186,8 +181,6 @@ public class TerminalToolbarViewPager {
 
         private boolean sendCommandToTerminal(String command) {
             TerminalSession session = mActivity.getCurrentSession();
-
-            Log.i(getClass().getCanonicalName(), "-- send text to terminal");
             if (session != null) {
                 if (session.isRunning()) {
                     if (command.length() == 0) command = "\r";
@@ -202,11 +195,10 @@ public class TerminalToolbarViewPager {
             return false;
         }
 
-        private void scanPackages() {
-            Log.i(getClass().getCanonicalName(), "-- scan packages");
+        private void updatePackagesList() {
+            // avoid block UI thread, let's scan packages on other thread
             new Thread(() -> {
                 final PackageManager pm = mActivity.getPackageManager();
-
                 if (pm != null) {
                     mPackages.clear();
                     pm.getInstalledApplications(PackageManager.GET_META_DATA).forEach(info -> {
@@ -218,23 +210,21 @@ public class TerminalToolbarViewPager {
             }).start();
         }
 
-        private void updateSuggestionList(CharSequence str, EditText source, TextView dest) {
-            SpannableStringBuilder hints = new SpannableStringBuilder();
-
+        private SpannableStringBuilder buildSuggestionList(CharSequence str) {
+            SpannableStringBuilder labelBuilder = new SpannableStringBuilder();
             List<ApplicationInfo> packages = filterPackagesBy(str.toString());
 
-            mSuggestedApplication = null;
+            mReadyApplication = null;
             packages.forEach(info -> {
                 final PackageManager pm = mActivity.getPackageManager();
                 if (pm != null) {
                     CharSequence name = pm.getApplicationLabel(info);
-                    SpannableString spannableName = new SpannableString(name);
+                    SpannableString label = new SpannableString(name);
 
-                    spannableName.setSpan(
+                    label.setSpan(
                         new ClickableSpan() {
                             @Override
                             public void onClick(@NonNull View widget) {
-                                source.setText("");
                                 tryToOpenSuggestionApplication(info);
                             }
 
@@ -243,61 +233,61 @@ public class TerminalToolbarViewPager {
                                 super.updateDrawState(ds);
                                 ds.setUnderlineText(false);
                             }
-                        }, 0, name.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        }, 0,
+                        name.length(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                    spannableName.setSpan(new BackgroundColorSpan(Color.YELLOW), 0,
-                        name.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    // highlight first item
+                    if (labelBuilder.length() == 0) {
+                        label.setSpan(new BackgroundColorSpan(Color.YELLOW), 0,
+                            name.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                    if (hints.length() > 0)
-                        hints.append(" / ");
+                        label.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0,
+                            name.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                    // pick the first matched application to launch when Enter gets hit
-                    if (mSuggestedApplication == null)
-                        mSuggestedApplication = info;
+                        // pick the first matched application to launch when Enter gets hit
+                        mReadyApplication = info;
+                    } else {
+                        label.setSpan(new BackgroundColorSpan(Color.WHITE), 0,
+                            name.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        labelBuilder.append("/");
+                    }
 
-                    hints.append(spannableName);
+                    labelBuilder.append(label);
                 }
             });
 
-            dest.setText(hints);
-            dest.setVisibility(View.VISIBLE);
+            return labelBuilder;
         }
 
         /*
-         * implements simple regular expression package name filter
+         * implements simple package name filter
          */
         private List<ApplicationInfo> filterPackagesBy(String prefix) {
             List<ApplicationInfo> packages = new ArrayList<>();
-            String finalPrefix = prefix.toLowerCase().replaceAll("[\\*$]+", "");
+            String purePrefix = prefix.toLowerCase().replaceAll("[*$]+", "");
 
-            Log.w(getClass().getCanonicalName(), "-- prefix: '" + finalPrefix + "'");
             mPackages.forEach(info -> {
                 final PackageManager pm = mActivity.getPackageManager();
                 if (pm != null) {
                     String name = pm.getApplicationLabel(info).toString().toLowerCase();
 
                     if ((prefix.startsWith("*")) && (prefix.endsWith("$"))) {
-                        if (name.endsWith(finalPrefix))
-                            packages.add(info);
+                        if (name.endsWith(purePrefix)) packages.add(info);
                         return;
                     }
 
                     if (prefix.startsWith("*")) {
-                        if (name.contains(finalPrefix))
-                            packages.add(info);
+                        if (name.contains(purePrefix)) packages.add(info);
                         return;
                     }
 
                     if (prefix.endsWith("$")) {
-                        if (name.contentEquals(finalPrefix))
-                            packages.add(info);
+                        if (name.contentEquals(purePrefix)) packages.add(info);
                         return;
                     }
 
-                    if(name.startsWith(finalPrefix)) {
-                        packages.add(info);
-                        return;
-                    }
+                    if(name.startsWith(purePrefix)) packages.add(info);
                 }
             });
 

@@ -24,7 +24,7 @@
         android:drawableLeft="@drawable/ic_prompt"/>
 
     <TextView
-        android:id="@+id/terminal_toolbar_text_input1"
+        android:id="@+id/terminal_toolbar_suggestion_applications_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:imeOptions="actionSend|flagNoFullscreen"
