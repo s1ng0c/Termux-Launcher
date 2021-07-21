@@ -32,13 +32,14 @@ import com.termux.app.TermuxActivity;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.terminal.TerminalSession;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TerminalToolbarViewPager {
 
     public static class PageAdapter extends PagerAdapter {
-
         final TermuxActivity mActivity;
         final List<ApplicationInfo> mPackages = new ArrayList<>();
 
@@ -48,7 +49,7 @@ public class TerminalToolbarViewPager {
         public PageAdapter(TermuxActivity activity, String savedTextInput) {
             this.mActivity = activity;
             this.mSavedTextInput = savedTextInput;
-            this.updatePackagesList();
+            this.updatePackagesListAsync();
         }
 
         @Override
@@ -90,7 +91,7 @@ public class TerminalToolbarViewPager {
                 }
 
                 textView.setMovementMethod(LinkMovementMethod.getInstance());
-                editText.addTextChangedListener(new TextWatcher(){
+                editText.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     }
@@ -115,12 +116,10 @@ public class TerminalToolbarViewPager {
                 editText.setOnEditorActionListener((v, actionId, event) -> {
                     String textToSend = editText.getText().toString();
 
-                    if (textToSend.length() == 0) return false;
-
                     if (handleSpecialCommand(textToSend)
                         || tryToOpenUrl(textToSend)
-                        || tryToOpenSuggestionApplication(this.mReadyApplication)
-                        || sendCommandToTerminal(textToSend + '\r')) {
+                        || (textToSend.length() > 0 && tryToOpenSuggestionApplication(null))
+                        || sendCommandToTerminal(textToSend)) {
                         editText.setText("");
                     }
 
@@ -143,7 +142,13 @@ public class TerminalToolbarViewPager {
             // used to refresh package list for some case such as  new package installed,
             // package got uninstalled, etc.,
             if (command.contentEquals("/update")) {
-                updatePackagesList();
+                updatePackagesListAsync();
+
+                return true;
+            }
+
+            if (command.contentEquals("/list")) {
+                listAvailableApplications();
                 return true;
             }
 
@@ -158,20 +163,26 @@ public class TerminalToolbarViewPager {
             if (URLUtil.isValidUrl(url) && Patterns.WEB_URL.matcher(url).matches()) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 mActivity.startActivity(browserIntent);
+
+                logToTerminal("open " + url, true);
                 return true;
             }
 
             return false;
         }
 
-        private boolean tryToOpenSuggestionApplication(ApplicationInfo info) {
-            if (info == null) return false;
+        private boolean tryToOpenSuggestionApplication(ApplicationInfo app) {
+            ApplicationInfo requestedApp = (app == null)? this.mReadyApplication: app;
+
+            if (requestedApp == null) return false;
 
             final PackageManager pm = mActivity.getPackageManager();
             if (pm != null) {
-                final Intent intent = pm.getLaunchIntentForPackage(info.processName);
+                final Intent intent = pm.getLaunchIntentForPackage(requestedApp.processName);
                 if (intent != null) {
                     mActivity.startActivity(intent);
+
+                    logToTerminal("open " + pm.getApplicationLabel(requestedApp).toString(), true);
                     return true;
                 }
             }
@@ -184,7 +195,7 @@ public class TerminalToolbarViewPager {
             if (session != null) {
                 if (session.isRunning()) {
                     if (command.length() == 0) command = "\r";
-                        session.write(command);
+                    session.write(command);
                 } else {
                     mActivity.getTermuxTerminalSessionClient().removeFinishedSession(session);
                 }
@@ -195,8 +206,8 @@ public class TerminalToolbarViewPager {
             return false;
         }
 
-        private void updatePackagesList() {
-            // avoid block UI thread, let's scan packages on other thread
+        private void updatePackagesListAsync() {
+            // avoid blocking UI thread, let's scan packages on other thread
             new Thread(() -> {
                 final PackageManager pm = mActivity.getPackageManager();
                 if (pm != null) {
@@ -208,6 +219,39 @@ public class TerminalToolbarViewPager {
                     });
                 }
             }).start();
+        }
+
+        private void listAvailableApplications() {
+            final PackageManager pm = mActivity.getPackageManager();
+
+            if (pm != null) {
+                StringBuilder sb = new StringBuilder();
+                mPackages.forEach(pkg -> {
+                    if (sb.length() > 0)
+                        sb.append(" | ");
+                    sb.append(pm.getApplicationLabel(pkg).toString());
+                });
+                logToTerminal(sb.toString(), false);
+            }
+        }
+
+        private void logToTerminal(String message, boolean withTimestamp) {
+            TerminalSession session = mActivity.getCurrentSession();
+            if (session != null) {
+                if (session.isRunning()) {
+                    String timestamp = "";
+
+                    if (withTimestamp) {
+                        DateFormat formatter = DateFormat.getTimeInstance();
+                        Date date = new Date();
+                        timestamp = formatter.format(date);
+                    }
+
+                    String text = timestamp + " " + message;
+                    session.getEmulator().append(text.getBytes(), text.length());
+                    session.write("\n");
+                }
+            }
         }
 
         private SpannableStringBuilder buildSuggestionList(CharSequence str) {
@@ -287,7 +331,7 @@ public class TerminalToolbarViewPager {
                         return;
                     }
 
-                    if(name.startsWith(purePrefix)) packages.add(info);
+                    if (name.startsWith(purePrefix)) packages.add(info);
                 }
             });
 

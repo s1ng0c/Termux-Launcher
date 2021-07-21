@@ -33,23 +33,23 @@ import com.termux.shared.view.ViewUtils;
  * show the row but will switch it with suggestions if needed. If its enabled, then number keys row
  * is always shown and suggestions are shown in an additional row on top of it. This additional row is likely
  * part of the candidates view returned by the keyboard app in {@link InputMethodService#onCreateCandidatesView()}.
- *
+ * <p>
  * With the above configuration, the additional clipboard suggestions row partially covers the
  * extra keys/terminal. Reopening the keyboard/activity does not fix the issue. This is either a bug
  * in the Android OS where it does not consider the candidate's view height in its calculation to push
  * up the view or because Gboard does not include the candidate's view height in the height reported
  * to android that should be used, hence causing an overlap.
- *
+ * <p>
  * Gboard logs the following entry to `logcat` when its opened with or without the suggestions bar showing:
  * I/KeyboardViewUtil: KeyboardViewUtil.calculateMaxKeyboardBodyHeight():62 leave 500 height for app when screen height:2392, header height:176 and isFullscreenMode:false, so the max keyboard body height is:1716
  * where `keyboard_height = screen_height - height_for_app - header_height` (62 is a hardcoded value in Gboard source code and may be a version number)
  * So this may in fact be due to Gboard but https://stackoverflow.com/questions/57567272 suggests
  * otherwise. Another similar report https://stackoverflow.com/questions/66761661.
  * Also check https://github.com/termux/termux-app/issues/1539.
- *
+ * <p>
  * This overlap may happen even without `enforce-char-based-input=true` for keyboards with extended layouts
  * like number row, etc.
- *
+ * <p>
  * To fix these issues, `activity_termux.xml` has the constant 1sp transparent
  * `activity_termux_bottom_space_view` View at the bottom. This will appear as a line matching the
  * activity theme. When {@link TermuxActivity} {@link ViewTreeObserver.OnGlobalLayoutListener} is
@@ -63,18 +63,17 @@ import com.termux.shared.view.ViewUtils;
  */
 public class TermuxActivityRootView extends LinearLayout implements ViewTreeObserver.OnGlobalLayoutListener {
 
+    private static final String LOG_TAG = "TermuxActivityRootView";
+    private static int mStatusBarHeight;
     public TermuxActivity mActivity;
     public Integer marginBottom;
     public Integer lastMarginBottom;
     public long lastMarginBottomTime;
     public long lastMarginBottomExtraTime;
-
-    /** Log root view events. */
+    /**
+     * Log root view events.
+     */
     private boolean ROOT_VIEW_LOGGING_ENABLED = false;
-
-    private static final String LOG_TAG = "TermuxActivityRootView";
-
-    private static int mStatusBarHeight;
 
     public TermuxActivityRootView(Context context) {
         super(context);
@@ -147,7 +146,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         if (root_view_logging_enabled) {
             Logger.logVerbose(LOG_TAG, "windowAvailableRect " + ViewUtils.toRectString(windowAvailableRect) + ", bottomSpaceViewRect " + ViewUtils.toRectString(bottomSpaceViewRect));
             Logger.logVerbose(LOG_TAG, "windowAvailableRect.bottom " + windowAvailableRect.bottom +
-                ", bottomSpaceViewRect.bottom " +bottomSpaceViewRect.bottom +
+                ", bottomSpaceViewRect.bottom " + bottomSpaceViewRect.bottom +
                 ", diff " + (bottomSpaceViewRect.bottom - windowAvailableRect.bottom) + ", bottom " + params.bottomMargin +
                 ", isVisible " + windowAvailableRect.contains(bottomSpaceViewRect) + ", isRectAbove " + ViewUtils.isRectAbove(windowAvailableRect, bottomSpaceViewRect) +
                 ", isVisibleBecauseMargin " + isVisibleBecauseMargin + ", isVisibleBecauseExtraMargin " + isVisibleBecauseExtraMargin);
@@ -252,7 +251,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
                 setMargin = true;
             }
 
-            if (pxHidden  < 0) {
+            if (pxHidden < 0) {
                 if (root_view_logging_enabled)
                     Logger.logVerbose(LOG_TAG, "Force setting margin to 0 since new margin is negative");
                 pxHidden = 0;
@@ -275,7 +274,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
     public static class WindowInsetsListener implements View.OnApplyWindowInsetsListener {
         @Override
         public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-            mStatusBarHeight =  WindowInsetsCompat.toWindowInsetsCompat(insets).getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            mStatusBarHeight = WindowInsetsCompat.toWindowInsetsCompat(insets).getInsets(WindowInsetsCompat.Type.statusBars()).top;
             // Let view window handle insets however it wants
             return v.onApplyWindowInsets(insets);
         }

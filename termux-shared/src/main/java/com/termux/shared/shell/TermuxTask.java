@@ -8,11 +8,11 @@ import android.system.OsConstants;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.R;
+import com.termux.shared.logger.Logger;
 import com.termux.shared.models.ExecutionCommand;
+import com.termux.shared.models.ExecutionCommand.ExecutionState;
 import com.termux.shared.models.ResultData;
 import com.termux.shared.models.errors.Errno;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.models.ExecutionCommand.ExecutionState;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -26,11 +26,10 @@ import java.nio.charset.StandardCharsets;
  */
 public final class TermuxTask {
 
+    private static final String LOG_TAG = "TermuxTask";
     private final Process mProcess;
     private final ExecutionCommand mExecutionCommand;
     private final TermuxTaskClient mTermuxTaskClient;
-
-    private static final String LOG_TAG = "TermuxTask";
 
     private TermuxTask(@NonNull final Process process, @NonNull final ExecutionCommand executionCommand,
                        final TermuxTaskClient termuxTaskClient) {
@@ -41,24 +40,24 @@ public final class TermuxTask {
 
     /**
      * Start execution of an {@link ExecutionCommand} with {@link Runtime#exec(String[], String[], File)}.
-     *
+     * <p>
      * The {@link ExecutionCommand#executable}, must be set.
      * The  {@link ExecutionCommand#commandLabel}, {@link ExecutionCommand#arguments} and
      * {@link ExecutionCommand#workingDirectory} may optionally be set.
      *
-     * @param context The {@link Context} for operations.
-     * @param executionCommand The {@link ExecutionCommand} containing the information for execution command.
-     * @param termuxTaskClient The {@link TermuxTaskClient} interface implementation.
-     *                           The {@link TermuxTaskClient#onTermuxTaskExited(TermuxTask)} will
-     *                           be called regardless of {@code isSynchronous} value but not if
-     *                           {@code null} is returned by this method. This can
-     *                           optionally be {@code null}.
+     * @param context                The {@link Context} for operations.
+     * @param executionCommand       The {@link ExecutionCommand} containing the information for execution command.
+     * @param termuxTaskClient       The {@link TermuxTaskClient} interface implementation.
+     *                               The {@link TermuxTaskClient#onTermuxTaskExited(TermuxTask)} will
+     *                               be called regardless of {@code isSynchronous} value but not if
+     *                               {@code null} is returned by this method. This can
+     *                               optionally be {@code null}.
      * @param shellEnvironmentClient The {@link ShellEnvironmentClient} interface implementation.
-     * @param isSynchronous If set to {@code true}, then the command will be executed in the
-     *                      caller thread and results returned synchronously in the {@link ExecutionCommand}
-     *                      sub object of the {@link TermuxTask} returned.
-     *                      If set to {@code false}, then a new thread is started run the commands
-     *                      asynchronously in the background and control is returned to the caller thread.
+     * @param isSynchronous          If set to {@code true}, then the command will be executed in the
+     *                               caller thread and results returned synchronously in the {@link ExecutionCommand}
+     *                               sub object of the {@link TermuxTask} returned.
+     *                               If set to {@code false}, then a new thread is started run the commands
+     *                               asynchronously in the background and control is returned to the caller thread.
      * @return Returns the {@link TermuxTask}. This will be {@code null} if failed to start the execution command.
      */
     public static TermuxTask execute(@NonNull final Context context, @NonNull ExecutionCommand executionCommand,
@@ -122,8 +121,46 @@ public final class TermuxTask {
     }
 
     /**
-     * Sets up stdout and stderr readers for the {@link #mProcess} and waits for the process to end.
+     * Process the results of {@link TermuxTask} or {@link ExecutionCommand}.
+     * <p>
+     * Only one of {@code termuxTask} and {@code executionCommand} must be set.
+     * <p>
+     * If the {@code termuxTask} and its {@link #mTermuxTaskClient} are not {@code null},
+     * then the {@link TermuxTaskClient#onTermuxTaskExited(TermuxTask)} callback will be called.
      *
+     * @param termuxTask       The {@link TermuxTask}, which should be set if
+     *                         {@link #execute(Context, ExecutionCommand, TermuxTaskClient, ShellEnvironmentClient, boolean)}
+     *                         successfully started the process.
+     * @param executionCommand The {@link ExecutionCommand}, which should be set if
+     *                         {@link #execute(Context, ExecutionCommand, TermuxTaskClient, ShellEnvironmentClient, boolean)}
+     *                         failed to start the process.
+     */
+    private static void processTermuxTaskResult(final TermuxTask termuxTask, ExecutionCommand executionCommand) {
+        if (termuxTask != null)
+            executionCommand = termuxTask.mExecutionCommand;
+
+        if (executionCommand == null) return;
+
+        if (executionCommand.shouldNotProcessResults()) {
+            Logger.logDebug(LOG_TAG, "Ignoring duplicate call to process \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask result");
+            return;
+        }
+
+        Logger.logDebug(LOG_TAG, "Processing \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask result");
+
+        if (termuxTask != null && termuxTask.mTermuxTaskClient != null) {
+            termuxTask.mTermuxTaskClient.onTermuxTaskExited(termuxTask);
+        } else {
+            // If a callback is not set and execution command didn't fail, then we set success state now
+            // Otherwise, the callback host can set it himself when its done with the termuxTask
+            if (!executionCommand.isStateFailed())
+                executionCommand.setState(ExecutionCommand.ExecutionState.SUCCESS);
+        }
+    }
+
+    /**
+     * Sets up stdout and stderr readers for the {@link #mProcess} and waits for the process to end.
+     * <p>
      * If the processes finishes, then sets {@link ResultData#stdout}, {@link ResultData#stderr}
      * and {@link ResultData#exitCode} for the {@link #mExecutionCommand} of the {@code termuxTask}
      * and then calls {@link #processTermuxTaskResult(TermuxTask, ExecutionCommand) to process the result}.
@@ -153,7 +190,7 @@ public final class TermuxTask {
                 STDIN.close();
                 //STDIN.write("exit\n".getBytes(StandardCharsets.UTF_8));
                 //STDIN.flush();
-            } catch(IOException e) {
+            } catch (IOException e) {
                 if (e.getMessage() != null && (e.getMessage().contains("EPIPE") || e.getMessage().contains("Stream closed"))) {
                     // Method most horrid to catch broken pipe, in which case we
                     // do nothing. The command is not a shell, the shell closed
@@ -212,7 +249,7 @@ public final class TermuxTask {
      * Kill this {@link TermuxTask} by sending a {@link OsConstants#SIGILL} to its {@link #mProcess}
      * if its still executing.
      *
-     * @param context The {@link Context} for operations.
+     * @param context       The {@link Context} for operations.
      * @param processResult If set to {@code true}, then the {@link #processTermuxTaskResult(TermuxTask, ExecutionCommand)}
      *                      will be called to process the failure.
      */
@@ -250,44 +287,6 @@ public final class TermuxTask {
         }
     }
 
-    /**
-     * Process the results of {@link TermuxTask} or {@link ExecutionCommand}.
-     *
-     * Only one of {@code termuxTask} and {@code executionCommand} must be set.
-     *
-     * If the {@code termuxTask} and its {@link #mTermuxTaskClient} are not {@code null},
-     * then the {@link TermuxTaskClient#onTermuxTaskExited(TermuxTask)} callback will be called.
-     *
-     * @param termuxTask The {@link TermuxTask}, which should be set if
-     *                  {@link #execute(Context, ExecutionCommand, TermuxTaskClient, ShellEnvironmentClient, boolean)}
-     *                   successfully started the process.
-     * @param executionCommand The {@link ExecutionCommand}, which should be set if
-     *                          {@link #execute(Context, ExecutionCommand, TermuxTaskClient, ShellEnvironmentClient, boolean)}
-     *                          failed to start the process.
-     */
-    private static void processTermuxTaskResult(final TermuxTask termuxTask, ExecutionCommand executionCommand) {
-        if (termuxTask != null)
-            executionCommand = termuxTask.mExecutionCommand;
-
-        if (executionCommand == null) return;
-
-        if (executionCommand.shouldNotProcessResults()) {
-            Logger.logDebug(LOG_TAG, "Ignoring duplicate call to process \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask result");
-            return;
-        }
-
-        Logger.logDebug(LOG_TAG, "Processing \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask result");
-
-        if (termuxTask != null && termuxTask.mTermuxTaskClient != null) {
-            termuxTask.mTermuxTaskClient.onTermuxTaskExited(termuxTask);
-        } else {
-            // If a callback is not set and execution command didn't fail, then we set success state now
-            // Otherwise, the callback host can set it himself when its done with the termuxTask
-            if (!executionCommand.isStateFailed())
-                executionCommand.setState(ExecutionCommand.ExecutionState.SUCCESS);
-        }
-    }
-
     public Process getProcess() {
         return mProcess;
     }
@@ -295,7 +294,6 @@ public final class TermuxTask {
     public ExecutionCommand getExecutionCommand() {
         return mExecutionCommand;
     }
-
 
 
     public interface TermuxTaskClient {

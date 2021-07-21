@@ -18,7 +18,7 @@ public class SharedPreferenceUtils {
      * shared preferences directory.
      *
      * @param context The {@link Context} to get the {@link SharedPreferences} instance.
-     * @param name The preferences file basename without extension.
+     * @param name    The preferences file basename without extension.
      * @return The single {@link SharedPreferences} instance that can be used to retrieve and
      * modify the preference values.
      */
@@ -32,7 +32,7 @@ public class SharedPreferenceUtils {
      * created in the app package's default shared preferences directory.
      *
      * @param context The {@link Context} to get the {@link SharedPreferences} instance.
-     * @param name The preferences file basename without extension.
+     * @param name    The preferences file basename without extension.
      * @return The single {@link SharedPreferences} instance that can be used to retrieve and
      * modify the preference values.
      */
@@ -41,13 +41,12 @@ public class SharedPreferenceUtils {
     }
 
 
-
     /**
      * Get a {@code boolean} from {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to get the value from.
-     * @param key The key for the value.
-     * @param def The default value if failed to read a valid value.
+     * @param key               The key for the value.
+     * @param def               The default value if failed to read a valid value.
      * @return Returns the {@code boolean} value stored in {@link SharedPreferences}, otherwise returns
      * default if failed to read a valid value, like in case of an exception.
      */
@@ -59,8 +58,7 @@ public class SharedPreferenceUtils {
 
         try {
             return sharedPreferences.getBoolean(key, def);
-        }
-        catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error getting boolean value for the \"" + key + "\" key from shared preferences. Returning default value \"" + def + "\".", e);
             return def;
         }
@@ -70,11 +68,11 @@ public class SharedPreferenceUtils {
      * Set a {@code boolean} in {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to set the value in.
-     * @param key The key for the value.
-     * @param value The value to store.
-     * @param commitToFile If set to {@code true}, then value will be set to shared preferences
-     *                     in-memory cache and the file synchronously. Ideally, only to be used for
-     *                     multi-process use-cases.
+     * @param key               The key for the value.
+     * @param value             The value to store.
+     * @param commitToFile      If set to {@code true}, then value will be set to shared preferences
+     *                          in-memory cache and the file synchronously. Ideally, only to be used for
+     *                          multi-process use-cases.
      */
     @SuppressLint("ApplySharedPref")
     public static void setBoolean(SharedPreferences sharedPreferences, String key, boolean value, boolean commitToFile) {
@@ -91,13 +89,12 @@ public class SharedPreferenceUtils {
     }
 
 
-
     /**
      * Get a {@code float} from {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to get the value from.
-     * @param key The key for the value.
-     * @param def The default value if failed to read a valid value.
+     * @param key               The key for the value.
+     * @param def               The default value if failed to read a valid value.
      * @return Returns the {@code float} value stored in {@link SharedPreferences}, otherwise returns
      * default if failed to read a valid value, like in case of an exception.
      */
@@ -109,8 +106,7 @@ public class SharedPreferenceUtils {
 
         try {
             return sharedPreferences.getFloat(key, def);
-        }
-        catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error getting float value for the \"" + key + "\" key from shared preferences. Returning default value \"" + def + "\".", e);
             return def;
         }
@@ -120,11 +116,11 @@ public class SharedPreferenceUtils {
      * Set a {@code float} in {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to set the value in.
-     * @param key The key for the value.
-     * @param value The value to store.
-     * @param commitToFile If set to {@code true}, then value will be set to shared preferences
-     *                     in-memory cache and the file synchronously. Ideally, only to be used for
-     *                     multi-process use-cases.
+     * @param key               The key for the value.
+     * @param value             The value to store.
+     * @param commitToFile      If set to {@code true}, then value will be set to shared preferences
+     *                          in-memory cache and the file synchronously. Ideally, only to be used for
+     *                          multi-process use-cases.
      */
     @SuppressLint("ApplySharedPref")
     public static void setFloat(SharedPreferences sharedPreferences, String key, float value, boolean commitToFile) {
@@ -140,13 +136,12 @@ public class SharedPreferenceUtils {
     }
 
 
-
     /**
      * Get an {@code int} from {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to get the value from.
-     * @param key The key for the value.
-     * @param def The default value if failed to read a valid value.
+     * @param key               The key for the value.
+     * @param def               The default value if failed to read a valid value.
      * @return Returns the {@code int} value stored in {@link SharedPreferences}, otherwise returns
      * default if failed to read a valid value, like in case of an exception.
      */
@@ -158,8 +153,7 @@ public class SharedPreferenceUtils {
 
         try {
             return sharedPreferences.getInt(key, def);
-        }
-        catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error getting int value for the \"" + key + "\" key from shared preferences. Returning default value \"" + def + "\".", e);
             return def;
         }
@@ -169,11 +163,11 @@ public class SharedPreferenceUtils {
      * Set an {@code int} in {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to set the value in.
-     * @param key The key for the value.
-     * @param value The value to store.
-     * @param commitToFile If set to {@code true}, then value will be set to shared preferences
-     *                     in-memory cache and the file synchronously. Ideally, only to be used for
-     *                     multi-process use-cases.
+     * @param key               The key for the value.
+     * @param value             The value to store.
+     * @param commitToFile      If set to {@code true}, then value will be set to shared preferences
+     *                          in-memory cache and the file synchronously. Ideally, only to be used for
+     *                          multi-process use-cases.
      */
     @SuppressLint("ApplySharedPref")
     public static void setInt(SharedPreferences sharedPreferences, String key, int value, boolean commitToFile) {
@@ -189,13 +183,12 @@ public class SharedPreferenceUtils {
     }
 
 
-
     /**
      * Get a {@code long} from {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to get the value from.
-     * @param key The key for the value.
-     * @param def The default value if failed to read a valid value.
+     * @param key               The key for the value.
+     * @param def               The default value if failed to read a valid value.
      * @return Returns the {@code long} value stored in {@link SharedPreferences}, otherwise returns
      * default if failed to read a valid value, like in case of an exception.
      */
@@ -207,8 +200,7 @@ public class SharedPreferenceUtils {
 
         try {
             return sharedPreferences.getLong(key, def);
-        }
-        catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error getting long value for the \"" + key + "\" key from shared preferences. Returning default value \"" + def + "\".", e);
             return def;
         }
@@ -218,11 +210,11 @@ public class SharedPreferenceUtils {
      * Set a {@code long} in {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to set the value in.
-     * @param key The key for the value.
-     * @param value The value to store.
-     * @param commitToFile If set to {@code true}, then value will be set to shared preferences
-     *                     in-memory cache and the file synchronously. Ideally, only to be used for
-     *                     multi-process use-cases.
+     * @param key               The key for the value.
+     * @param value             The value to store.
+     * @param commitToFile      If set to {@code true}, then value will be set to shared preferences
+     *                          in-memory cache and the file synchronously. Ideally, only to be used for
+     *                          multi-process use-cases.
      */
     @SuppressLint("ApplySharedPref")
     public static void setLong(SharedPreferences sharedPreferences, String key, long value, boolean commitToFile) {
@@ -238,13 +230,12 @@ public class SharedPreferenceUtils {
     }
 
 
-
     /**
      * Get a {@code String} from {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to get the value from.
-     * @param key The key for the value.
-     * @param def The default value if failed to read a valid value.
+     * @param key               The key for the value.
+     * @param def               The default value if failed to read a valid value.
      * @return Returns the {@code String} value stored in {@link SharedPreferences}, otherwise returns
      * default if failed to read a valid value, like in case of an exception.
      */
@@ -256,8 +247,7 @@ public class SharedPreferenceUtils {
 
         try {
             return sharedPreferences.getString(key, def);
-        }
-        catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error getting String value for the \"" + key + "\" key from shared preferences. Returning default value \"" + def + "\".", e);
             return def;
         }
@@ -267,11 +257,11 @@ public class SharedPreferenceUtils {
      * Set a {@code String} in {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to set the value in.
-     * @param key The key for the value.
-     * @param value The value to store.
-     * @param commitToFile If set to {@code true}, then value will be set to shared preferences
-     *                     in-memory cache and the file synchronously. Ideally, only to be used for
-     *                     multi-process use-cases.
+     * @param key               The key for the value.
+     * @param value             The value to store.
+     * @param commitToFile      If set to {@code true}, then value will be set to shared preferences
+     *                          in-memory cache and the file synchronously. Ideally, only to be used for
+     *                          multi-process use-cases.
      */
     @SuppressLint("ApplySharedPref")
     public static void setString(SharedPreferences sharedPreferences, String key, String value, boolean commitToFile) {
@@ -287,13 +277,12 @@ public class SharedPreferenceUtils {
     }
 
 
-
     /**
      * Get a {@code Set<String>} from {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to get the value from.
-     * @param key The key for the value.
-     * @param def The default value if failed to read a valid value.
+     * @param key               The key for the value.
+     * @param def               The default value if failed to read a valid value.
      * @return Returns the {@code Set<String>} value stored in {@link SharedPreferences}, otherwise returns
      * default if failed to read a valid value, like in case of an exception.
      */
@@ -305,8 +294,7 @@ public class SharedPreferenceUtils {
 
         try {
             return sharedPreferences.getStringSet(key, def);
-        }
-        catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error getting Set<String> value for the \"" + key + "\" key from shared preferences. Returning default value \"" + def + "\".", e);
             return def;
         }
@@ -316,11 +304,11 @@ public class SharedPreferenceUtils {
      * Set a {@code Set<String>} in {@link SharedPreferences}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to set the value in.
-     * @param key The key for the value.
-     * @param value The value to store.
-     * @param commitToFile If set to {@code true}, then value will be set to shared preferences
-     *                     in-memory cache and the file synchronously. Ideally, only to be used for
-     *                     multi-process use-cases.
+     * @param key               The key for the value.
+     * @param value             The value to store.
+     * @param commitToFile      If set to {@code true}, then value will be set to shared preferences
+     *                          in-memory cache and the file synchronously. Ideally, only to be used for
+     *                          multi-process use-cases.
      */
     @SuppressLint("ApplySharedPref")
     public static void setStringSet(SharedPreferences sharedPreferences, String key, Set<String> value, boolean commitToFile) {
@@ -336,13 +324,12 @@ public class SharedPreferenceUtils {
     }
 
 
-
     /**
      * Get an {@code int} from {@link SharedPreferences} that is stored as a {@link String}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to get the value from.
-     * @param key The key for the value.
-     * @param def The default value if failed to read a valid value.
+     * @param key               The key for the value.
+     * @param def               The default value if failed to read a valid value.
      * @return Returns the {@code int} value after parsing the {@link String} value stored in
      * {@link SharedPreferences}, otherwise returns default if failed to read a valid value,
      * like in case of an exception.
@@ -359,7 +346,7 @@ public class SharedPreferenceUtils {
         try {
             stringValue = sharedPreferences.getString(key, Integer.toString(def));
             if (stringValue != null)
-                intValue =  Integer.parseInt(stringValue);
+                intValue = Integer.parseInt(stringValue);
             else
                 intValue = def;
         } catch (NumberFormatException | ClassCastException e) {
@@ -373,11 +360,11 @@ public class SharedPreferenceUtils {
      * Set an {@code int} into {@link SharedPreferences} that is stored as a {@link String}.
      *
      * @param sharedPreferences The {@link SharedPreferences} to set the value in.
-     * @param key The key for the value.
-     * @param value The value to store.
-     * @param commitToFile If set to {@code true}, then value will be set to shared preferences
-     *                     in-memory cache and the file synchronously. Ideally, only to be used for
-     *                     multi-process use-cases.
+     * @param key               The key for the value.
+     * @param value             The value to store.
+     * @param commitToFile      If set to {@code true}, then value will be set to shared preferences
+     *                          in-memory cache and the file synchronously. Ideally, only to be used for
+     *                          multi-process use-cases.
      */
     @SuppressLint("ApplySharedPref")
     public static void setIntStoredAsString(SharedPreferences sharedPreferences, String key, int value, boolean commitToFile) {

@@ -1,12 +1,5 @@
 package com.termux.shared.activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,11 +7,18 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.termux.shared.R;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.interact.ShareUtils;
+import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.ReportInfo;
+import com.termux.shared.termux.TermuxConstants;
 
 import org.commonmark.node.FencedCodeBlock;
 
@@ -33,6 +33,24 @@ public class ReportActivity extends AppCompatActivity {
     ReportInfo mReportInfo;
     String mReportMarkdownString;
     String mReportActivityMarkdownString;
+
+    public static void startReportActivity(@NonNull final Context context, @NonNull final ReportInfo reportInfo) {
+        context.startActivity(newInstance(context, reportInfo));
+    }
+
+    public static Intent newInstance(@NonNull final Context context, @NonNull final ReportInfo reportInfo) {
+        Intent intent = new Intent(context, ReportActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(EXTRA_REPORT_INFO, reportInfo);
+        intent.putExtras(bundle);
+
+        // Note that ReportActivity task has documentLaunchMode="intoExisting" set in AndroidManifest.xml
+        // which has equivalent behaviour to the following. The following dynamic way doesn't seem to
+        // work for notification pending intent, i.e separate task isn't created and activity is
+        // launched in the same task as TermuxActivity.
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,8 +123,6 @@ public class ReportActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-
-
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -155,26 +171,6 @@ public class ReportActivity extends AppCompatActivity {
 
         if (mReportInfo.reportStringSuffix != null)
             mReportActivityMarkdownString += mReportInfo.reportStringSuffix;
-    }
-
-
-
-    public static void startReportActivity(@NonNull final Context context, @NonNull final ReportInfo reportInfo) {
-        context.startActivity(newInstance(context, reportInfo));
-    }
-
-    public static Intent newInstance(@NonNull final Context context, @NonNull final ReportInfo reportInfo) {
-        Intent intent = new Intent(context, ReportActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(EXTRA_REPORT_INFO, reportInfo);
-        intent.putExtras(bundle);
-
-        // Note that ReportActivity task has documentLaunchMode="intoExisting" set in AndroidManifest.xml
-        // which has equivalent behaviour to the following. The following dynamic way doesn't seem to
-        // work for notification pending intent, i.e separate task isn't created and activity is
-        // launched in the same task as TermuxActivity.
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |  Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        return intent;
     }
 
 }

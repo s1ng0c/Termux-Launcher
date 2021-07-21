@@ -9,21 +9,20 @@ import android.content.Intent;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
+import com.termux.app.models.UserAction;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.data.DataUtils;
+import com.termux.shared.file.FileUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.models.ReportInfo;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.models.ReportInfo;
-import com.termux.app.models.UserAction;
 import com.termux.shared.notification.TermuxNotificationUtils;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.settings.preferences.TermuxPreferenceConstants;
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.AndroidUtils;
-import com.termux.shared.termux.TermuxUtils;
-
 import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxUtils;
 
 import java.nio.charset.Charset;
 
@@ -35,15 +34,15 @@ public class CrashUtils {
      * Notify the user of an app crash at last run by reading the crash info from the crash log file
      * at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}. The crash log file would have been
      * created by {@link com.termux.shared.crash.CrashHandler}.
-     *
+     * <p>
      * If the crash log file exists and is not empty and
      * {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED} is
      * enabled, then a notification will be shown for the crash on the
      * {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME} channel, otherwise nothing will be done.
-     *
+     * <p>
      * After reading from the crash log file, it will be moved to {@link TermuxConstants#TERMUX_CRASH_LOG_BACKUP_FILE_PATH}.
      *
-     * @param context The {@link Context} for operations.
+     * @param context     The {@link Context} for operations.
      * @param logTagParam The log tag to use for logging.
      */
     public static void notifyAppCrashOnLastRun(final Context context, final String logTagParam) {
@@ -85,7 +84,7 @@ public class CrashUtils {
                 if (reportString.isEmpty())
                     return;
 
-                Logger.logDebug(logTag, "A crash log file found at \"" + TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH +  "\".");
+                Logger.logDebug(logTag, "A crash log file found at \"" + TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH + "\".");
 
                 sendCrashReportNotification(context, logTag, reportString, false, false);
             }
@@ -96,13 +95,13 @@ public class CrashUtils {
      * Send a crash report notification for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
      * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
-     * @param context The {@link Context} for operations.
-     * @param logTag The log tag to use for logging.
-     * @param message The message for the crash report.
-     * @param forceNotification If set to {@code true}, then a notification will be shown
-     *                          regardless of if pending intent is {@code null} or
-     *                          {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED}
-     *                          is {@code false}.
+     * @param context             The {@link Context} for operations.
+     * @param logTag              The log tag to use for logging.
+     * @param message             The message for the crash report.
+     * @param forceNotification   If set to {@code true}, then a notification will be shown
+     *                            regardless of if pending intent is {@code null} or
+     *                            {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED}
+     *                            is {@code false}.
      * @param addAppAndDeviceInfo If set to {@code true}, then app and device info will be appended
      *                            to the message.
      */
@@ -152,22 +151,22 @@ public class CrashUtils {
      * Get {@link Notification.Builder} for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
      * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
-     * @param context The {@link Context} for operations.
-     * @param title The title for the notification.
-     * @param notificationText The second line text of the notification.
+     * @param context             The {@link Context} for operations.
+     * @param title               The title for the notification.
+     * @param notificationText    The second line text of the notification.
      * @param notificationBigText The full text of the notification that may optionally be styled.
-     * @param pendingIntent The {@link PendingIntent} which should be sent when notification is clicked.
-     * @param notificationMode The notification mode. It must be one of {@code NotificationUtils.NOTIFICATION_MODE_*}.
+     * @param pendingIntent       The {@link PendingIntent} which should be sent when notification is clicked.
+     * @param notificationMode    The notification mode. It must be one of {@code NotificationUtils.NOTIFICATION_MODE_*}.
      * @return Returns the {@link Notification.Builder}.
      */
     @Nullable
     public static Notification.Builder getCrashReportsNotificationBuilder(final Context context, final CharSequence title, final CharSequence notificationText, final CharSequence notificationBigText, final PendingIntent pendingIntent, final int notificationMode) {
 
-        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(context,
+        Notification.Builder builder = NotificationUtils.geNotificationBuilder(context,
             TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
             title, notificationText, notificationBigText, pendingIntent, notificationMode);
 
-        if (builder == null)  return null;
+        if (builder == null) return null;
 
         // Enable timestamp
         builder.setShowWhen(true);

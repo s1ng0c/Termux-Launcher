@@ -29,10 +29,9 @@ public class TermuxTaskerPreferencesFragment extends PreferenceFragmentCompat {
 
 class TermuxTaskerPreferencesDataStore extends PreferenceDataStore {
 
+    private static TermuxTaskerPreferencesDataStore mInstance;
     private final Context mContext;
     private final TermuxTaskerAppSharedPreferences mPreferences;
-
-    private static TermuxTaskerPreferencesDataStore mInstance;
 
     private TermuxTaskerPreferencesDataStore(Context context) {
         mContext = context;

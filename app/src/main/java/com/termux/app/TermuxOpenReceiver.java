@@ -13,14 +13,14 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
 
+import androidx.annotation.NonNull;
+
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
-import androidx.annotation.NonNull;
 
 public class TermuxOpenReceiver extends BroadcastReceiver {
 

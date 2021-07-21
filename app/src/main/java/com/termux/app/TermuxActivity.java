@@ -31,34 +31,34 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.termux.R;
-import com.termux.app.terminal.TermuxActivityRootView;
-import com.termux.shared.packages.PermissionUtils;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
-import com.termux.app.activities.HelpActivity;
-import com.termux.app.activities.SettingsActivity;
-import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
-import com.termux.app.terminal.TermuxSessionsListViewController;
-import com.termux.app.terminal.io.TerminalToolbarViewPager;
-import com.termux.app.terminal.TermuxTerminalSessionClient;
-import com.termux.app.terminal.TermuxTerminalViewClient;
-import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
-import com.termux.app.settings.properties.TermuxAppSharedProperties;
-import com.termux.shared.interact.TextInputDialogUtils;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.termux.TermuxUtils;
-import com.termux.terminal.TerminalSession;
-import com.termux.terminal.TerminalSessionClient;
-import com.termux.app.utils.CrashUtils;
-import com.termux.view.TerminalView;
-import com.termux.view.TerminalViewClient;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
+
+import com.termux.R;
+import com.termux.app.activities.HelpActivity;
+import com.termux.app.activities.SettingsActivity;
+import com.termux.app.settings.properties.TermuxAppSharedProperties;
+import com.termux.app.terminal.TermuxActivityRootView;
+import com.termux.app.terminal.TermuxSessionsListViewController;
+import com.termux.app.terminal.TermuxTerminalSessionClient;
+import com.termux.app.terminal.TermuxTerminalViewClient;
+import com.termux.app.terminal.io.TerminalToolbarViewPager;
+import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
+import com.termux.app.utils.CrashUtils;
+import com.termux.shared.interact.TextInputDialogUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.packages.PermissionUtils;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.shared.termux.TermuxUtils;
+import com.termux.terminal.TerminalSession;
+import com.termux.terminal.TerminalSessionClient;
+import com.termux.view.TerminalView;
+import com.termux.view.TerminalViewClient;
 
 /**
  * A terminal emulator activity.
@@ -72,91 +72,6 @@ import androidx.viewpager.widget.ViewPager;
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
 
-    /**
-     * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
-     * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
-     * {@link #onServiceConnected(ComponentName, IBinder)}.
-     */
-    TermuxService mTermuxService;
-
-    /**
-     * The {@link TerminalView} shown in  {@link TermuxActivity} that displays the terminal.
-     */
-    TerminalView mTerminalView;
-
-    /**
-     *  The {@link TerminalViewClient} interface implementation to allow for communication between
-     *  {@link TerminalView} and {@link TermuxActivity}.
-     */
-    TermuxTerminalViewClient mTermuxTerminalViewClient;
-
-    /**
-     *  The {@link TerminalSessionClient} interface implementation to allow for communication between
-     *  {@link TerminalSession} and {@link TermuxActivity}.
-     */
-    TermuxTerminalSessionClient mTermuxTerminalSessionClient;
-
-    /**
-     * Termux app shared preferences manager.
-     */
-    private TermuxAppSharedPreferences mPreferences;
-
-    /**
-     * Termux app shared properties manager, loaded from termux.properties
-     */
-    private TermuxAppSharedProperties mProperties;
-
-    /**
-     * The root view of the {@link TermuxActivity}.
-     */
-    TermuxActivityRootView mTermuxActivityRootView;
-
-    /**
-     * The space at the bottom of {@link @mTermuxActivityRootView} of the {@link TermuxActivity}.
-     */
-    View mTermuxActivityBottomSpaceView;
-
-    /**
-     * The terminal extra keys view.
-     */
-    ExtraKeysView mExtraKeysView;
-
-    /**
-     * The termux sessions list controller.
-     */
-    TermuxSessionsListViewController mTermuxSessionListViewController;
-
-    /**
-     * The {@link TermuxActivity} broadcast receiver for various things like terminal style configuration changes.
-     */
-    private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new TermuxActivityBroadcastReceiver();
-
-    /**
-     * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
-     */
-    Toast mLastToast;
-
-    /**
-     * If between onResume() and onStop(). Note that only one session is in the foreground of the terminal view at the
-     * time, so if the session causing a change is not in the foreground it should probably be treated as background.
-     */
-    private boolean mIsVisible;
-
-    /**
-     * If onResume() was called after onCreate().
-     */
-    private boolean isOnResumeAfterOnCreate = false;
-
-    /**
-     * The {@link TermuxActivity} is in an invalid state and must not be run.
-     */
-    private boolean mIsInvalidState;
-
-    private int mNavBarHeight;
-
-    private int mTerminalToolbarDefaultHeight;
-
-
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
     private static final int CONTEXT_MENU_AUTOFILL_ID = 2;
@@ -167,10 +82,91 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private static final int CONTEXT_MENU_HELP_ID = 7;
     private static final int CONTEXT_MENU_SETTINGS_ID = 8;
     private static final int CONTEXT_MENU_REPORT_ID = 9;
-
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
-
     private static final String LOG_TAG = "TermuxActivity";
+    /**
+     * The {@link TermuxActivity} broadcast receiver for various things like terminal style configuration changes.
+     */
+    private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new TermuxActivityBroadcastReceiver();
+    /**
+     * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
+     * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
+     * {@link #onServiceConnected(ComponentName, IBinder)}.
+     */
+    TermuxService mTermuxService;
+    /**
+     * The {@link TerminalView} shown in  {@link TermuxActivity} that displays the terminal.
+     */
+    TerminalView mTerminalView;
+    /**
+     * The {@link TerminalViewClient} interface implementation to allow for communication between
+     * {@link TerminalView} and {@link TermuxActivity}.
+     */
+    TermuxTerminalViewClient mTermuxTerminalViewClient;
+    /**
+     * The {@link TerminalSessionClient} interface implementation to allow for communication between
+     * {@link TerminalSession} and {@link TermuxActivity}.
+     */
+    TermuxTerminalSessionClient mTermuxTerminalSessionClient;
+    /**
+     * The root view of the {@link TermuxActivity}.
+     */
+    TermuxActivityRootView mTermuxActivityRootView;
+    /**
+     * The space at the bottom of {@link @mTermuxActivityRootView} of the {@link TermuxActivity}.
+     */
+    View mTermuxActivityBottomSpaceView;
+    /**
+     * The terminal extra keys view.
+     */
+    ExtraKeysView mExtraKeysView;
+    /**
+     * The termux sessions list controller.
+     */
+    TermuxSessionsListViewController mTermuxSessionListViewController;
+    /**
+     * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
+     */
+    Toast mLastToast;
+    /**
+     * Termux app shared preferences manager.
+     */
+    private TermuxAppSharedPreferences mPreferences;
+    /**
+     * Termux app shared properties manager, loaded from termux.properties
+     */
+    private TermuxAppSharedProperties mProperties;
+    /**
+     * If between onResume() and onStop(). Note that only one session is in the foreground of the terminal view at the
+     * time, so if the session causing a change is not in the foreground it should probably be treated as background.
+     */
+    private boolean mIsVisible;
+    /**
+     * If onResume() was called after onCreate().
+     */
+    private boolean isOnResumeAfterOnCreate = false;
+    /**
+     * The {@link TermuxActivity} is in an invalid state and must not be run.
+     */
+    private boolean mIsInvalidState;
+    private int mNavBarHeight;
+    private int mTerminalToolbarDefaultHeight;
+
+    public static void updateTermuxActivityStyling(Context context) {
+        // Make sure that terminal styling is always applied.
+        Intent stylingIntent = new Intent(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
+        context.sendBroadcast(stylingIntent);
+    }
+
+    public static void startTermuxActivity(@NonNull final Context context) {
+        context.startActivity(newInstance(context));
+    }
+
+    public static Intent newInstance(@NonNull final Context context) {
+        Intent intent = new Intent(context, TermuxActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return intent;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -388,10 +384,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         finishActivityIfNotFinishing();
     }
 
-
-
-
-
     private void setActivityTheme() {
         if (mProperties.isUsingBlackUI()) {
             this.setTheme(R.style.Theme_Termux_Black);
@@ -408,8 +400,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-
-
     public void addTermuxActivityRootViewGlobalLayoutListener() {
         getTermuxActivityRootView().getViewTreeObserver().addOnGlobalLayoutListener(getTermuxActivityRootView());
     }
@@ -418,8 +408,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (getTermuxActivityRootView() != null)
             getTermuxActivityRootView().getViewTreeObserver().removeOnGlobalLayoutListener(getTermuxActivityRootView());
     }
-
-
 
     private void setTermuxTerminalViewAndClients() {
         // Set termux terminal view and session clients
@@ -445,11 +433,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
     }
 
-
-
     private void setTerminalToolbarView(Bundle savedInstanceState) {
         final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
-        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        if (mPreferences.shouldShowTerminalToolbar())
+            terminalToolbarViewPager.setVisibility(View.VISIBLE);
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         mTerminalToolbarDefaultHeight = layoutParams.height;
@@ -490,14 +477,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private void saveTerminalToolbarTextInput(Bundle savedInstanceState) {
         if (savedInstanceState == null) return;
 
-        final EditText textInputView =  findViewById(R.id.terminal_toolbar_text_input);
+        final EditText textInputView = findViewById(R.id.terminal_toolbar_text_input);
         if (textInputView != null) {
             String textInput = textInputView.getText().toString();
-            if (!textInput.isEmpty()) savedInstanceState.putString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT, textInput);
+            if (!textInput.isEmpty())
+                savedInstanceState.putString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT, textInput);
         }
     }
-
-
 
     private void setSettingsButtonView() {
         ImageButton settingsButton = findViewById(R.id.settings_button);
@@ -530,10 +516,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         });
     }
 
-
-
-
-
     @SuppressLint("RtlHardcoded")
     @Override
     public void onBackPressed() {
@@ -551,7 +533,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    /** Show a toast and dismiss the last one if still visible. */
+    /**
+     * Show a toast and dismiss the last one if still visible.
+     */
     public void showToast(String text, boolean longDuration) {
         if (text == null || text.isEmpty()) return;
         if (mLastToast != null) mLastToast.cancel();
@@ -559,8 +543,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mLastToast.setGravity(Gravity.TOP, 0, 0);
         mLastToast.show();
     }
-
-
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
@@ -577,7 +559,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         menu.add(Menu.NONE, CONTEXT_MENU_SELECT_URL_ID, Menu.NONE, R.string.action_select_url);
         menu.add(Menu.NONE, CONTEXT_MENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.action_share_transcript);
-        if (addAutoFillMenu) menu.add(Menu.NONE, CONTEXT_MENU_AUTOFILL_ID, Menu.NONE, R.string.action_autofill_password);
+        if (addAutoFillMenu)
+            menu.add(Menu.NONE, CONTEXT_MENU_AUTOFILL_ID, Menu.NONE, R.string.action_autofill_password);
         menu.add(Menu.NONE, CONTEXT_MENU_RESET_TERMINAL_ID, Menu.NONE, R.string.action_reset_terminal);
         menu.add(Menu.NONE, CONTEXT_MENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.action_kill_process, getCurrentSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXT_MENU_STYLING_ID, Menu.NONE, R.string.action_style_terminal);
@@ -587,7 +570,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXT_MENU_REPORT_ID, Menu.NONE, R.string.action_report_issue);
     }
 
-    /** Hook system menu to show context menu instead. */
+    /**
+     * Hook system menu to show context menu instead.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mTerminalView.showContextMenu();
@@ -670,6 +655,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 .setPositiveButton(R.string.action_styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL)))).setNegativeButton(android.R.string.cancel, null).show();
         }
     }
+
     private void toggleKeepScreenOn() {
         if (mTerminalView.getKeepScreenOn()) {
             mTerminalView.setKeepScreenOn(false);
@@ -688,8 +674,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
         }
     }
-
-
 
     /**
      * For processes to access shared internal storage (/sdcard) we need this permission.
@@ -713,8 +697,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             Logger.logInfo(LOG_TAG, "Storage permission denied by user on request.");
         }
     }
-
-
 
     public int getNavBarHeight() {
         return mNavBarHeight;
@@ -752,8 +734,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return isOnResumeAfterOnCreate;
     }
 
-
-
     public TermuxService getTermuxService() {
         return mTermuxService;
     }
@@ -786,15 +766,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return mProperties;
     }
 
-
-
-
-    public static void updateTermuxActivityStyling(Context context) {
-        // Make sure that terminal styling is always applied.
-        Intent stylingIntent = new Intent(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
-        context.sendBroadcast(stylingIntent);
-    }
-
     private void registerTermuxActivityBroadcastReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
@@ -817,32 +788,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent == null) return;
-
-            if (mIsVisible) {
-                fixTermuxActivityBroadcastReceieverIntent(intent);
-
-                switch (intent.getAction()) {
-                    case TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS:
-                        Logger.logDebug(LOG_TAG, "Received intent to request storage permissions");
-                        if (ensureStoragePermissionGranted())
-                            TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
-                        return;
-                    case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
-                        Logger.logDebug(LOG_TAG, "Received intent to reload styling");
-                        reloadActivityStyling();
-                        return;
-                    default:
-                }
-            }
-        }
-    }
-
     private void reloadActivityStyling() {
-        if (mProperties!= null) {
+        if (mProperties != null) {
             mProperties.loadTermuxPropertiesFromDisk();
 
             if (mExtraKeysView != null) {
@@ -870,14 +817,28 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         // TermuxActivity.this.recreate();
     }
 
-    public static void startTermuxActivity(@NonNull final Context context) {
-        context.startActivity(newInstance(context));
-    }
+    class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null) return;
 
-    public static Intent newInstance(@NonNull final Context context) {
-        Intent intent = new Intent(context, TermuxActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        return intent;
+            if (mIsVisible) {
+                fixTermuxActivityBroadcastReceieverIntent(intent);
+
+                switch (intent.getAction()) {
+                    case TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS:
+                        Logger.logDebug(LOG_TAG, "Received intent to request storage permissions");
+                        if (ensureStoragePermissionGranted())
+                            TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
+                        return;
+                    case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
+                        Logger.logDebug(LOG_TAG, "Received intent to reload styling");
+                        reloadActivityStyling();
+                        return;
+                    default:
+                }
+            }
+        }
     }
 
 }

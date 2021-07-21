@@ -16,13 +16,6 @@
 
 package com.termux.shared.shell;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Locale;
-
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,49 +23,23 @@ import androidx.annotation.WorkerThread;
 
 import com.termux.shared.logger.Logger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * Thread utility class continuously reading from an InputStream
- *
+ * <p>
  * https://github.com/Chainfire/libsuperuser/blob/1.1.0.201907261845/libsuperuser/src/eu/chainfire/libsuperuser/Shell.java#L141
  * https://github.com/Chainfire/libsuperuser/blob/1.1.0.201907261845/libsuperuser/src/eu/chainfire/libsuperuser/StreamGobbler.java
  */
 @SuppressWarnings({"WeakerAccess"})
 public class StreamGobbler extends Thread {
+    private static final String LOG_TAG = "StreamGobbler";
     private static int threadCounter = 0;
-    private static int incThreadCounter() {
-        synchronized (StreamGobbler.class) {
-            int ret = threadCounter;
-            threadCounter++;
-            return ret;
-        }
-    }
-
-    /**
-     * Line callback interface
-     */
-    public interface OnLineListener {
-        /**
-         * <p>Line callback</p>
-         *
-         * <p>This callback should process the line as quickly as possible.
-         * Delays in this callback may pause the native process or even
-         * result in a deadlock</p>
-         *
-         * @param line String that was gobbled
-         */
-        void onLine(String line);
-    }
-
-    /**
-     * Stream closed callback interface
-     */
-    public interface OnStreamClosedListener {
-        /**
-         * <p>Stream closed callback</p>
-         */
-        void onStreamClosed();
-    }
-
     @NonNull
     private final String shell;
     @NonNull
@@ -89,9 +56,6 @@ public class StreamGobbler extends Thread {
     private final OnStreamClosedListener streamClosedListener;
     private volatile boolean active = true;
     private volatile boolean calledOnClose = false;
-
-    private static final String LOG_TAG = "StreamGobbler";
-
     /**
      * <p>StreamGobbler constructor</p>
      *
@@ -99,9 +63,9 @@ public class StreamGobbler extends Thread {
      * possible to prevent a deadlock from occurring, or Process.waitFor() never
      * returning (as the buffer is full, pausing the native process)</p>
      *
-     * @param shell Name of the shell
+     * @param shell       Name of the shell
      * @param inputStream InputStream to read from
-     * @param outputList {@literal List<String>} to write to, or null
+     * @param outputList  {@literal List<String>} to write to, or null
      */
     @AnyThread
     public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream, @Nullable List<String> outputList) {
@@ -115,7 +79,6 @@ public class StreamGobbler extends Thread {
         stringWriter = null;
         lineListener = null;
     }
-
     /**
      * <p>StreamGobbler constructor</p>
      *
@@ -125,8 +88,8 @@ public class StreamGobbler extends Thread {
      * Do not use this for concurrent reading for STDOUT and STDERR for the same StringBuilder since
      * its not synchronized.
      *
-     * @param shell Name of the shell
-     * @param inputStream InputStream to read from
+     * @param shell        Name of the shell
+     * @param inputStream  InputStream to read from
      * @param outputString {@literal List<String>} to write to, or null
      */
     @AnyThread
@@ -149,9 +112,9 @@ public class StreamGobbler extends Thread {
      * possible to prevent a deadlock from occurring, or Process.waitFor() never
      * returning (as the buffer is full, pausing the native process)</p>
      *
-     * @param shell Name of the shell
-     * @param inputStream InputStream to read from
-     * @param onLineListener OnLineListener callback
+     * @param shell                  Name of the shell
+     * @param inputStream            InputStream to read from
+     * @param onLineListener         OnLineListener callback
      * @param onStreamClosedListener OnStreamClosedListener callback
      */
     @AnyThread
@@ -165,6 +128,14 @@ public class StreamGobbler extends Thread {
         listWriter = null;
         stringWriter = null;
         lineListener = onLineListener;
+    }
+
+    private static int incThreadCounter() {
+        synchronized (StreamGobbler.class) {
+            int ret = threadCounter;
+            threadCounter++;
+            return ret;
+        }
     }
 
     @Override
@@ -299,5 +270,31 @@ public class StreamGobbler extends Thread {
         if (calledOnClose) return; // deadlock from callback, we're inside exit procedure
         if (Thread.currentThread() == this) return; // can't join self
         join();
+    }
+
+    /**
+     * Line callback interface
+     */
+    public interface OnLineListener {
+        /**
+         * <p>Line callback</p>
+         *
+         * <p>This callback should process the line as quickly as possible.
+         * Delays in this callback may pause the native process or even
+         * result in a deadlock</p>
+         *
+         * @param line String that was gobbled
+         */
+        void onLine(String line);
+    }
+
+    /**
+     * Stream closed callback interface
+     */
+    public interface OnStreamClosedListener {
+        /**
+         * <p>Stream closed callback</p>
+         */
+        void onStreamClosed();
     }
 }

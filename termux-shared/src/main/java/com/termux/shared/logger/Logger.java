@@ -26,20 +26,17 @@ public class Logger {
     public static final int LOG_LEVEL_VERBOSE = 3; // start logging verbose messages
 
     public static final int DEFAULT_LOG_LEVEL = LOG_LEVEL_NORMAL;
-    private static int CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
-
     /**
      * The maximum size of the log entry payload that can be written to the logger. An attempt to
      * write more than this amount will result in a truncated log entry.
-     *
+     * <p>
      * The limit is 4068 but this includes log tag and log level prefix "D/" before log tag and ": "
      * suffix after it.
-     *
+     * <p>
      * #define LOGGER_ENTRY_MAX_PAYLOAD 4068
      * https://cs.android.com/android/_/android/platform/system/core/+/android10-release:liblog/include/log/log_read.h;l=127
      */
     public static final int LOGGER_ENTRY_MAX_PAYLOAD = 4068; // 4068 bytes
-
     /**
      * The maximum safe size of the log entry payload that can be written to the logger, based on
      * {@link #LOGGER_ENTRY_MAX_PAYLOAD}. Using 4000 as a safe limit to give log tag and its
@@ -47,8 +44,7 @@ public class Logger {
      * limit if tag is already known.
      */
     public static final int LOGGER_ENTRY_MAX_SAFE_PAYLOAD = 4000; // 4000 bytes
-
-
+    private static int CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
 
     public static void logMessage(int logLevel, String tag, String message) {
         if (logLevel == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
@@ -75,7 +71,7 @@ public class Logger {
 
         List<String> messagesList = new ArrayList<>();
 
-        while(!message.isEmpty()) {
+        while (!message.isEmpty()) {
             if (message.length() > maxEntrySize) {
                 cutOffIndex = maxEntrySize;
                 nextNewlineIndex = message.lastIndexOf('\n', cutOffIndex);
@@ -90,13 +86,12 @@ public class Logger {
             }
         }
 
-        for(int i=0; i<messagesList.size(); i++) {
+        for (int i = 0; i < messagesList.size(); i++) {
             if (messagesList.size() > 1)
                 prefix = "(" + (i + 1) + "/" + messagesList.size() + ")\n";
             logMessage(logLevel, tag, prefix + messagesList.get(i));
         }
     }
-
 
 
     public static void logError(String tag, String message) {
@@ -116,7 +111,6 @@ public class Logger {
     }
 
 
-
     public static void logWarn(String tag, String message) {
         logMessage(Log.WARN, tag, message);
     }
@@ -132,7 +126,6 @@ public class Logger {
     public static void logWarnExtended(String message) {
         logExtendedMessage(Log.WARN, DEFAULT_LOG_TAG, message);
     }
-
 
 
     public static void logInfo(String tag, String message) {
@@ -152,7 +145,6 @@ public class Logger {
     }
 
 
-
     public static void logDebug(String tag, String message) {
         logMessage(Log.DEBUG, tag, message);
     }
@@ -168,7 +160,6 @@ public class Logger {
     public static void logDebugExtended(String message) {
         logExtendedMessage(Log.DEBUG, DEFAULT_LOG_TAG, message);
     }
-
 
 
     public static void logVerbose(String tag, String message) {
@@ -188,7 +179,6 @@ public class Logger {
     }
 
 
-
     public static void logErrorAndShowToast(Context context, String tag, String message) {
         if (context == null) return;
 
@@ -203,7 +193,6 @@ public class Logger {
     }
 
 
-
     public static void logDebugAndShowToast(Context context, String tag, String message) {
         if (context == null) return;
 
@@ -216,7 +205,6 @@ public class Logger {
     public static void logDebugAndShowToast(Context context, String message) {
         logDebugAndShowToast(context, DEFAULT_LOG_TAG, message);
     }
-
 
 
     public static void logStackTraceWithMessage(String tag, String message, Throwable throwable) {
@@ -236,11 +224,9 @@ public class Logger {
     }
 
 
-
     public static void logStackTracesWithMessage(String tag, String message, List<Throwable> throwablesList) {
         Logger.logErrorExtended(tag, getMessageAndStackTracesString(message, throwablesList));
     }
-
 
 
     public static String getMessageAndStackTraceString(String message, Throwable throwable) {
@@ -266,7 +252,6 @@ public class Logger {
     }
 
 
-
     public static String getStackTraceString(Throwable throwable) {
         if (throwable == null) return null;
 
@@ -287,7 +272,6 @@ public class Logger {
     }
 
 
-
     public static String[] getStackTracesStringArray(Throwable throwable) {
         return getStackTracesStringArray(Collections.singletonList(throwable));
     }
@@ -300,7 +284,6 @@ public class Logger {
         }
         return stackTraceStringArray;
     }
-
 
 
     public static String getStackTracesString(String label, String[] stackTraceStringArray) {
@@ -345,16 +328,15 @@ public class Logger {
         if (object != null)
             return label + ": `" + object + "`";
         else
-            return  label + ": "  +  def;
+            return label + ": " + def;
     }
 
     public static String getMultiLineLogStringEntry(String label, Object object, String def) {
         if (object != null)
             return label + ":\n```\n" + object + "\n```\n";
         else
-            return  label + ": "  +  def;
+            return label + ": " + def;
     }
-
 
 
     public static void showToast(final Context context, final String toastText, boolean longDuration) {
@@ -362,7 +344,6 @@ public class Logger {
 
         new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, toastText, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show());
     }
-
 
 
     public static CharSequence[] getLogLevelsArray() {
@@ -379,7 +360,7 @@ public class Logger {
 
         CharSequence[] logLevelLabels = new CharSequence[logLevels.length];
 
-        for(int i=0; i<logLevels.length; i++) {
+        for (int i = 0; i < logLevels.length; i++) {
             logLevelLabels[i] = getLogLevelLabel(context, Integer.parseInt(logLevels[i].toString()), addDefaultTag);
         }
 
@@ -389,11 +370,21 @@ public class Logger {
     public static String getLogLevelLabel(final Context context, final int logLevel, final boolean addDefaultTag) {
         String logLabel;
         switch (logLevel) {
-            case LOG_LEVEL_OFF: logLabel = context.getString(R.string.log_level_off); break;
-            case LOG_LEVEL_NORMAL: logLabel = context.getString(R.string.log_level_normal); break;
-            case LOG_LEVEL_DEBUG: logLabel = context.getString(R.string.log_level_debug); break;
-            case LOG_LEVEL_VERBOSE: logLabel = context.getString(R.string.log_level_verbose); break;
-            default: logLabel = context.getString(R.string.log_level_unknown); break;
+            case LOG_LEVEL_OFF:
+                logLabel = context.getString(R.string.log_level_off);
+                break;
+            case LOG_LEVEL_NORMAL:
+                logLabel = context.getString(R.string.log_level_normal);
+                break;
+            case LOG_LEVEL_DEBUG:
+                logLabel = context.getString(R.string.log_level_debug);
+                break;
+            case LOG_LEVEL_VERBOSE:
+                logLabel = context.getString(R.string.log_level_verbose);
+                break;
+            default:
+                logLabel = context.getString(R.string.log_level_unknown);
+                break;
         }
 
         if (addDefaultTag && logLevel == DEFAULT_LOG_LEVEL)
@@ -401,7 +392,6 @@ public class Logger {
         else
             return logLabel;
     }
-
 
 
     public static int getLogLevel() {
@@ -415,7 +405,7 @@ public class Logger {
             CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
 
         if (context != null)
-            showToast(context, context.getString(R.string.log_level_value, getLogLevelLabel(context, CURRENT_LOG_LEVEL, false)),true);
+            showToast(context, context.getString(R.string.log_level_value, getLogLevelLabel(context, CURRENT_LOG_LEVEL, false)), true);
 
         return CURRENT_LOG_LEVEL;
     }

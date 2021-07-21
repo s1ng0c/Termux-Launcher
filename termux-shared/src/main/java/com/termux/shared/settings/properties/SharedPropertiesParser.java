@@ -14,8 +14,8 @@ public interface SharedPropertiesParser {
      * read from properties file in the {@link HashMap <>} in-memory cache.
      *
      * @param context The context for operations.
-     * @param key The key for which the internal object is required.
-     * @param value The literal value for the property found is the properties file.
+     * @param key     The key for which the internal object is required.
+     * @param value   The literal value for the property found is the properties file.
      * @return Returns the {@link Object} object to store in the {@link HashMap <>} in-memory cache.
      */
     Object getInternalPropertyValueFromValue(Context context, String key, String value);

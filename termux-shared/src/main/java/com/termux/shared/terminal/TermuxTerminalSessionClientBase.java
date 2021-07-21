@@ -42,12 +42,10 @@ public class TermuxTerminalSessionClientBase implements TerminalSessionClient {
     }
 
 
-
     @Override
     public Integer getTerminalCursorStyle() {
         return null;
     }
-
 
 
     @Override

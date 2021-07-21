@@ -41,8 +41,8 @@ public class FileKey {
 
     @Override
     public int hashCode() {
-        return (int)(st_dev ^ (st_dev >>> 32)) +
-            (int)(st_ino ^ (st_ino >>> 32));
+        return (int) (st_dev ^ (st_dev >>> 32)) +
+            (int) (st_ino ^ (st_ino >>> 32));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class FileKey {
             return true;
         if (!(obj instanceof FileKey))
             return false;
-        FileKey other = (FileKey)obj;
+        FileKey other = (FileKey) obj;
         return (this.st_dev == other.st_dev) && (this.st_ino == other.st_ino);
     }
 

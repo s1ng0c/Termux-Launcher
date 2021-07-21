@@ -2,8 +2,8 @@
     android:id="@+id/activity_termux_root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -14,21 +14,21 @@
         <androidx.drawerlayout.widget.DrawerLayout
             android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
-            android:layout_alignParentTop="true"
+            android:layout_height="match_parent"
             android:layout_above="@+id/terminal_toolbar_view_pager"
-            android:layout_height="match_parent">
+            android:layout_alignParentTop="true">
 
             <com.termux.view.TerminalView
                 android:id="@+id/terminal_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginRight="3dp"
                 android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:autofillHints="password"
                 android:focusableInTouchMode="true"
-                android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
-                android:scrollbars="vertical"
                 android:importantForAutofill="no"
-                android:autofillHints="password" />
+                android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
+                android:scrollbars="vertical" />
 
             <LinearLayout
                 android:id="@+id/left_drawer"
@@ -37,22 +37,23 @@
                 android:layout_gravity="start"
                 android:background="@android:color/white"
                 android:choiceMode="singleChoice"
+                android:descendantFocusability="blocksDescendants"
                 android:divider="@android:color/transparent"
                 android:dividerHeight="0dp"
-                android:descendantFocusability="blocksDescendants"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <ImageButton
                         android:id="@+id/settings_button"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:src="@drawable/ic_settings"
                         android:background="@null"
-                        android:contentDescription="@string/action_open_settings" />
+                        android:contentDescription="@string/action_open_settings"
+                        android:src="@drawable/ic_settings" />
                 </LinearLayout>
 
                 <ListView
@@ -92,11 +93,11 @@
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/terminal_toolbar_view_pager"
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="37.5dp"
+            android:layout_alignParentBottom="true"
             android:background="@android:drawable/screen_background_dark_transparent"
-            android:layout_alignParentBottom="true" />
+            android:visibility="gone" />
 
     </RelativeLayout>
 

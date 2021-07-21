@@ -7,23 +7,38 @@ import java.io.Serializable;
 
 public class ReportInfo implements Serializable {
 
-    /** The user action that was being processed for which the report was generated. */
+    /**
+     * The user action that was being processed for which the report was generated.
+     */
     public final String userAction;
-    /** The internal app component that sent the report. */
+    /**
+     * The internal app component that sent the report.
+     */
     public final String sender;
-    /** The report title. */
+    /**
+     * The report title.
+     */
     public final String reportTitle;
-    /** The markdown report text prefix. Will not be part of copy and share operations, etc. */
+    /**
+     * The markdown report text prefix. Will not be part of copy and share operations, etc.
+     */
     public final String reportStringPrefix;
-    /** The markdown report text. */
+    /**
+     * The markdown report text.
+     */
     public final String reportString;
-    /** The markdown report text suffix. Will not be part of copy and share operations, etc. */
+    /**
+     * The markdown report text suffix. Will not be part of copy and share operations, etc.
+     */
     public final String reportStringSuffix;
-    /** If set to {@code true}, then report, app and device info will be added to the report when
+    /**
+     * If set to {@code true}, then report, app and device info will be added to the report when
      * markdown is generated.
      */
     public final boolean addReportInfoToMarkdown;
-    /** The timestamp for the report. */
+    /**
+     * The timestamp for the report.
+     */
     public final String reportTimestamp;
 
     public ReportInfo(String userAction, String sender, String reportTitle, String reportStringPrefix, String reportString, String reportStringSuffix, boolean addReportInfoToMarkdown) {

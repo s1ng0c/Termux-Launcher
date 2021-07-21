@@ -45,7 +45,7 @@ public class MarkdownUtils {
      * Get the markdown code {@link String} for a {@link String}. This ensures all backticks "`" are
      * properly escaped so that markdown does not break.
      *
-     * @param string The {@link String} to convert.
+     * @param string    The {@link String} to convert.
      * @param codeBlock If the {@link String} is to be converted to a code block or inline code.
      * @return Returns the markdown code {@link String}.
      */
@@ -93,7 +93,7 @@ public class MarkdownUtils {
         String match;
 
         Matcher matcher = backticksPattern.matcher(string);
-        while(matcher.find()) {
+        while (matcher.find()) {
             match = matcher.group(1);
             matchCount = match != null ? match.length() : 0;
             if (matchCount > maxCount)
@@ -104,12 +104,11 @@ public class MarkdownUtils {
     }
 
 
-
     public static String getSingleLineMarkdownStringEntry(String label, Object object, String def) {
         if (object != null)
-            return "**" + label + "**: " + getMarkdownCodeForString(object.toString(), false) +  "  ";
+            return "**" + label + "**: " + getMarkdownCodeForString(object.toString(), false) + "  ";
         else
-            return "**" + label + "**: " + def +  "  ";
+            return "**" + label + "**: " + def + "  ";
     }
 
     public static String getMultiLineMarkdownStringEntry(String label, Object object, String def) {
@@ -121,13 +120,14 @@ public class MarkdownUtils {
 
     public static String getLinkMarkdownString(String label, Object object) {
         if (object != null)
-            return "[" + label + "](" + object +  ")";
+            return "[" + label + "](" + object + ")";
         else
             return label;
     }
 
 
-    /** Check following for more info:
+    /**
+     * Check following for more info:
      * https://github.com/noties/Markwon/tree/v4.6.2/app-sample
      * https://noties.io/Markwon/docs/v4/recycler/
      * https://github.com/noties/Markwon/blob/v4.6.2/app-sample/src/main/java/io/noties/markwon/app/readme/ReadMeActivity.kt
@@ -162,32 +162,33 @@ public class MarkdownUtils {
             .build();
     }
 
-    /** Check following for more info:
+    /**
+     * Check following for more info:
      * https://github.com/noties/Markwon/tree/v4.6.2/app-sample
      * https://github.com/noties/Markwon/blob/v4.6.2/app-sample/src/main/java/io/noties/markwon/app/samples/notification/NotificationSample.java
      */
     public static Markwon getSpannedMarkwonBuilder(Context context) {
         return Markwon.builder(context)
-                .usePlugin(StrikethroughPlugin.create())
-                .usePlugin(new AbstractMarkwonPlugin() {
-                    @Override
-                    public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
-                        builder
-                            .setFactory(Emphasis.class, (configuration, props) -> new StyleSpan(Typeface.ITALIC))
-                            .setFactory(StrongEmphasis.class, (configuration, props) -> new StyleSpan(Typeface.BOLD))
-                            .setFactory(BlockQuote.class, (configuration, props) -> new QuoteSpan())
-                            .setFactory(Strikethrough.class, (configuration, props) -> new StrikethroughSpan())
-                            // NB! notification does not handle background color
-                            .setFactory(Code.class, (configuration, props) -> new Object[]{
-                                new BackgroundColorSpan(ContextCompat.getColor(context, R.color.background_markdown_code_inline)),
-                                new TypefaceSpan("monospace"),
-                                new AbsoluteSizeSpan(48)
-                            })
-                            // NB! both ordered and bullet list items
-                            .setFactory(ListItem.class, (configuration, props) -> new BulletSpan());
-                    }
-                })
-                .build();
+            .usePlugin(StrikethroughPlugin.create())
+            .usePlugin(new AbstractMarkwonPlugin() {
+                @Override
+                public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
+                    builder
+                        .setFactory(Emphasis.class, (configuration, props) -> new StyleSpan(Typeface.ITALIC))
+                        .setFactory(StrongEmphasis.class, (configuration, props) -> new StyleSpan(Typeface.BOLD))
+                        .setFactory(BlockQuote.class, (configuration, props) -> new QuoteSpan())
+                        .setFactory(Strikethrough.class, (configuration, props) -> new StrikethroughSpan())
+                        // NB! notification does not handle background color
+                        .setFactory(Code.class, (configuration, props) -> new Object[]{
+                            new BackgroundColorSpan(ContextCompat.getColor(context, R.color.background_markdown_code_inline)),
+                            new TypefaceSpan("monospace"),
+                            new AbsoluteSizeSpan(48)
+                        })
+                        // NB! both ordered and bullet list items
+                        .setFactory(ListItem.class, (configuration, props) -> new BulletSpan());
+                }
+            })
+            .build();
     }
 
     public static Spanned getSpannedMarkdownText(Context context, String string) {

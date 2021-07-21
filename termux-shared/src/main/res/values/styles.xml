@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
     <style name="Theme.AppCompat.TermuxReportActivity" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimaryDark">#FF0000</item>
     </style>

@@ -14,7 +14,9 @@ import android.widget.RelativeLayout;
 
 import com.termux.shared.termux.TermuxConstants;
 
-/** Basic embedded browser for viewing help pages. */
+/**
+ * Basic embedded browser for viewing help pages.
+ */
 public final class HelpActivity extends Activity {
 
     WebView mWebView;

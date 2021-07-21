@@ -23,23 +23,23 @@ import com.termux.R;
 import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.utils.PluginUtils;
+import com.termux.shared.data.DataUtils;
 import com.termux.shared.data.IntentUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.errors.Errno;
+import com.termux.shared.notification.NotificationUtils;
+import com.termux.shared.packages.PermissionUtils;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.shell.ShellUtils;
+import com.termux.shared.shell.TermuxSession;
 import com.termux.shared.shell.TermuxShellEnvironmentClient;
 import com.termux.shared.shell.TermuxShellUtils;
+import com.termux.shared.shell.TermuxTask;
+import com.termux.shared.terminal.TermuxTerminalSessionClientBase;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
-import com.termux.shared.shell.TermuxSession;
-import com.termux.shared.terminal.TermuxTerminalSessionClientBase;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.notification.NotificationUtils;
-import com.termux.shared.packages.PermissionUtils;
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.models.ExecutionCommand;
-import com.termux.shared.shell.TermuxTask;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -64,17 +64,8 @@ import javax.annotation.Nullable;
  */
 public final class TermuxService extends Service implements TermuxTask.TermuxTaskClient, TermuxSession.TermuxSessionClient {
 
+    private static final String LOG_TAG = "TermuxService";
     private static int EXECUTION_ID = 1000;
-
-    /** This service is only bound from inside the same process and never uses IPC. */
-    class LocalBinder extends Binder {
-        public final TermuxService service = TermuxService.this;
-    }
-
-    private final IBinder mBinder = new LocalBinder();
-
-    private final Handler mHandler = new Handler();
-
     /**
      * The foreground TermuxSessions which this service manages.
      * Note that this list is observed by {@link TermuxActivity#mTermuxSessionListViewController},
@@ -82,38 +73,41 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
      * {@link ArrayAdapter#notifyDataSetChanged()} }.
      */
     final List<TermuxSession> mTermuxSessions = new ArrayList<>();
-
     /**
      * The background TermuxTasks which this service manages.
      */
     final List<TermuxTask> mTermuxTasks = new ArrayList<>();
-
     /**
      * The pending plugin ExecutionCommands that have yet to be processed by this service.
      */
     final List<ExecutionCommand> mPendingPluginExecutionCommands = new ArrayList<>();
-
-    /** The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
+    /**
+     * The basic implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
+     * that does not hold activity references.
+     */
+    final TermuxTerminalSessionClientBase mTermuxTerminalSessionClientBase = new TermuxTerminalSessionClientBase();
+    private final IBinder mBinder = new LocalBinder();
+    private final Handler mHandler = new Handler();
+    public Integer mTerminalTranscriptRows;
+    /**
+     * The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
      * that holds activity references for activity related functions.
      * Note that the service may often outlive the activity, so need to clear this reference.
      */
     TermuxTerminalSessionClient mTermuxTerminalSessionClient;
-
-    /** The basic implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
-     * that does not hold activity references.
+    /**
+     * If the user has executed the {@link TERMUX_SERVICE#ACTION_STOP_SERVICE} intent.
      */
-    final TermuxTerminalSessionClientBase mTermuxTerminalSessionClientBase = new TermuxTerminalSessionClientBase();
-
-    /** The wake lock and wifi lock are always acquired and released together. */
+    boolean mWantsToStop = false;
+    /**
+     * The wake lock and wifi lock are always acquired and released together.
+     */
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
 
-    /** If the user has executed the {@link TERMUX_SERVICE#ACTION_STOP_SERVICE} intent. */
-    boolean mWantsToStop = false;
-
-    public Integer mTerminalTranscriptRows;
-
-    private static final String LOG_TAG = "TermuxService";
+    public static synchronized int getNextExecutionId() {
+        return EXECUTION_ID++;
+    }
 
     @Override
     public void onCreate() {
@@ -190,64 +184,73 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         return false;
     }
 
-    /** Make service run in foreground mode. */
+    /**
+     * Make service run in foreground mode.
+     */
     private void runStartForeground() {
         setupNotificationChannel();
         startForeground(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
     }
 
-    /** Make service leave foreground mode. */
+    /**
+     * Make service leave foreground mode.
+     */
     private void runStopForeground() {
         stopForeground(true);
     }
 
-    /** Request to stop service. */
+    /**
+     * Request to stop service.
+     */
     private void requestStopService() {
         Logger.logDebug(LOG_TAG, "Requesting to stop service");
         runStopForeground();
         stopSelf();
     }
 
-    /** Process action to stop service. */
+    /**
+     * Process action to stop service.
+     */
     private void actionStopService() {
         mWantsToStop = true;
         killAllTermuxExecutionCommands();
         requestStopService();
     }
 
-    /** Kill all TermuxSessions and TermuxTasks by sending SIGKILL to their processes.
-     *
+    /**
+     * Kill all TermuxSessions and TermuxTasks by sending SIGKILL to their processes.
+     * <p>
      * For TermuxSessions, all sessions will be killed, whether user manually exited Termux or if
      * onDestroy() was directly called because of unintended shutdown. The processing of results
      * will only be done if user manually exited termux or if the session was started by a plugin
      * which **expects** the result back via a pending intent.
-     *
+     * <p>
      * For TermuxTasks, only tasks that were started by a plugin which **expects** the result
      * back via a pending intent will be killed, whether user manually exited Termux or if
      * onDestroy() was directly called because of unintended shutdown. The processing of results
      * will always be done for the tasks that are killed. The remaining processes will keep on
      * running until the termux app process is killed by android, like by OOM, so we let them run
      * as long as they can.
-     *
+     * <p>
      * Some plugin execution commands may not have been processed and added to mTermuxSessions and
      * mTermuxTasks lists before the service is killed, so we maintain a separate
      * mPendingPluginExecutionCommands list for those, so that we can notify the pending intent
      * creators that execution was cancelled.
-     *
+     * <p>
      * Note that if user didn't manually exit Termux and if onDestroy() was directly called because
      * of unintended shutdown, like android deciding to kill the service, then there will be no
      * guarantee that onDestroy() will be allowed to finish and termux app process may be killed before
      * it has finished. This means that in those cases some results may not be sent back to their
      * creators for plugin commands but we still try to process whatever results can be processed
      * despite the unreliable behaviour of onDestroy().
-     *
+     * <p>
      * Note that if don't kill the processes started by plugins which **expect** the result back
      * and notify their creators that they have been killed, then they may get stuck waiting for
      * the results forever like in case of commands started by Termux:Tasker or RUN_COMMAND intent,
      * since once TermuxService has been killed, no result will be sent back. They may still get
      * stuck if termux app process gets killed, so for this case reasonable timeout values should
      * be used, like in Tasker for the Termux:Tasker actions.
-     *
+     * <p>
      * We make copies of each list since items are removed inside the loop.
      */
     private synchronized void killAllTermuxExecutionCommands() {
@@ -281,8 +284,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     }
 
 
-
-    /** Process action to acquire Power and Wi-Fi WakeLocks. */
+    /**
+     * Process action to acquire Power and Wi-Fi WakeLocks.
+     */
     @SuppressLint({"WakelockTimeout", "BatteryLife"})
     private void actionAcquireWakeLock() {
         if (mWakeLock != null) {
@@ -321,7 +325,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
     }
 
-    /** Process action to release Power and Wi-Fi WakeLocks. */
+    /**
+     * Process action to release Power and Wi-Fi WakeLocks.
+     */
     private void actionReleaseWakeLock(boolean updateNotification) {
         if (mWakeLock == null && mWifiLock == null) {
             Logger.logDebug(LOG_TAG, "Ignoring releasing WakeLocks since none are already held");
@@ -346,8 +352,10 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         Logger.logDebug(LOG_TAG, "WakeLocks released successfully");
     }
 
-    /** Process {@link TERMUX_SERVICE#ACTION_SERVICE_EXECUTE} intent to execute a shell command in
-     * a foreground TermuxSession or in a background TermuxTask. */
+    /**
+     * Process {@link TERMUX_SERVICE#ACTION_SERVICE_EXECUTE} intent to execute a shell command in
+     * a foreground TermuxSession or in a background TermuxTask.
+     */
     private void actionServiceExecute(Intent intent) {
         if (intent == null) {
             Logger.logError(LOG_TAG, "Ignoring null intent to actionServiceExecute");
@@ -395,10 +403,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     }
 
 
-
-
-
-    /** Execute a shell command in background {@link TermuxTask}. */
+    /**
+     * Execute a shell command in background {@link TermuxTask}.
+     */
     private void executeTermuxTaskCommand(ExecutionCommand executionCommand) {
         if (executionCommand == null) return;
 
@@ -407,13 +414,17 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         TermuxTask newTermuxTask = createTermuxTask(executionCommand);
     }
 
-    /** Create a {@link TermuxTask}. */
+    /**
+     * Create a {@link TermuxTask}.
+     */
     @Nullable
     public TermuxTask createTermuxTask(String executablePath, String[] arguments, String stdin, String workingDirectory) {
         return createTermuxTask(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, stdin, workingDirectory, true, false));
     }
 
-    /** Create a {@link TermuxTask}. */
+    /**
+     * Create a {@link TermuxTask}.
+     */
     @Nullable
     public synchronized TermuxTask createTermuxTask(ExecutionCommand executionCommand) {
         if (executionCommand == null) return null;
@@ -451,7 +462,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         return newTermuxTask;
     }
 
-    /** Callback received when a {@link TermuxTask} finishes. */
+    /**
+     * Callback received when a {@link TermuxTask} finishes.
+     */
     @Override
     public void onTermuxTaskExited(final TermuxTask termuxTask) {
         mHandler.post(() -> {
@@ -472,10 +485,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     }
 
 
-
-
-
-    /** Execute a shell command in a foreground {@link TermuxSession}. */
+    /**
+     * Execute a shell command in a foreground {@link TermuxSession}.
+     */
     private void executeTermuxSessionCommand(ExecutionCommand executionCommand) {
         if (executionCommand == null) return;
 
@@ -505,7 +517,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         return createTermuxSession(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, stdin, workingDirectory, false, isFailSafe), sessionName);
     }
 
-    /** Create a {@link TermuxSession}. */
+    /**
+     * Create a {@link TermuxSession}.
+     */
     @Nullable
     public synchronized TermuxSession createTermuxSession(ExecutionCommand executionCommand, String sessionName) {
         if (executionCommand == null) return null;
@@ -553,7 +567,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         return newTermuxSession;
     }
 
-    /** Remove a TermuxSession. */
+    /**
+     * Remove a TermuxSession.
+     */
     public synchronized int removeTermuxSession(TerminalSession sessionToRemove) {
         int index = getIndexOfSession(sessionToRemove);
 
@@ -563,7 +579,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         return index;
     }
 
-    /** Callback received when a {@link TermuxSession} finishes. */
+    /**
+     * Callback received when a {@link TermuxSession} finishes.
+     */
     @Override
     public void onTermuxSessionExited(final TermuxSession termuxSession) {
         if (termuxSession != null) {
@@ -586,7 +604,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         updateNotification();
     }
 
-    /** Get the terminal transcript rows to be used for new {@link TermuxSession}. */
+    /**
+     * Get the terminal transcript rows to be used for new {@link TermuxSession}.
+     */
     public Integer getTerminalTranscriptRows() {
         if (mTerminalTranscriptRows == null)
             setTerminalTranscriptRows();
@@ -600,10 +620,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     }
 
 
-
-
-
-    /** Process session action for new session. */
+    /**
+     * Process session action for new session.
+     */
     private void handleSessionAction(int sessionAction, TerminalSession newTerminalSession) {
         Logger.logDebug(LOG_TAG, "Processing sessionAction \"" + sessionAction + "\" for session \"" + newTerminalSession.mSessionName + "\"");
 
@@ -635,7 +654,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         }
     }
 
-    /** Launch the {@link }TermuxActivity} to bring it to foreground. */
+    /**
+     * Launch the {@link }TermuxActivity} to bring it to foreground.
+     */
     private void startTermuxActivity() {
         // For android >= 10, apps require Display over other apps permission to start foreground activities
         // from background (services). If it is not granted, then TermuxSessions that are started will
@@ -651,10 +672,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     }
 
 
-
-
-
-    /** If {@link TermuxActivity} has not bound to the {@link TermuxService} yet or is destroyed, then
+    /**
+     * If {@link TermuxActivity} has not bound to the {@link TermuxService} yet or is destroyed, then
      * interface functions requiring the activity should not be available to the terminal sessions,
      * so we just return the {@link #mTermuxTerminalSessionClientBase}. Once {@link TermuxActivity} bind
      * callback is received, it should call {@link #setTermuxTerminalSessionClient} to set the
@@ -672,13 +691,14 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             return mTermuxTerminalSessionClientBase;
     }
 
-    /** This should be called when {@link TermuxActivity#onServiceConnected} is called to set the
+    /**
+     * This should be called when {@link TermuxActivity#onServiceConnected} is called to set the
      * {@link TermuxService#mTermuxTerminalSessionClient} variable and update the {@link TerminalSession}
      * and {@link TerminalEmulator} clients in case they were passed {@link TermuxTerminalSessionClientBase}
      * earlier.
      *
      * @param termuxTerminalSessionClient The {@link TermuxTerminalSessionClient} object that fully
-     * implements the {@link TerminalSessionClient} interface.
+     *                                    implements the {@link TerminalSessionClient} interface.
      */
     public synchronized void setTermuxTerminalSessionClient(TermuxTerminalSessionClient termuxTerminalSessionClient) {
         mTermuxTerminalSessionClient = termuxTerminalSessionClient;
@@ -687,7 +707,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionClient);
     }
 
-    /** This should be called when {@link TermuxActivity} has been destroyed and in {@link #onUnbind(Intent)}
+    /**
+     * This should be called when {@link TermuxActivity} has been destroyed and in {@link #onUnbind(Intent)}
      * so that the {@link TermuxService} and {@link TerminalSession} and {@link TerminalEmulator}
      * clients do not hold an activity references.
      */
@@ -697,9 +718,6 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
         mTermuxTerminalSessionClient = null;
     }
-
-
-
 
 
     private Notification buildNotification() {
@@ -729,11 +747,11 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
 
         // Build the notification
-        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
+        Notification.Builder builder = NotificationUtils.geNotificationBuilder(this,
             TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID, priority,
             getText(R.string.application_name), notificationText, null,
             pendingIntent, NotificationUtils.NOTIFICATION_MODE_SILENT);
-        if (builder == null)  return null;
+        if (builder == null) return null;
 
         // No need to show a timestamp:
         builder.setShowWhen(false);
@@ -771,7 +789,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
     }
 
-    /** Update the shown foreground service notification after making any changes that affect it. */
+    /**
+     * Update the shown foreground service notification after making any changes that affect it.
+     */
     private synchronized void updateNotification() {
         if (mWakeLock == null && mTermuxSessions.isEmpty() && mTermuxTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
@@ -780,9 +800,6 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
         }
     }
-
-
-
 
 
     private void setCurrentStoredTerminalSession(TerminalSession session) {
@@ -835,14 +852,15 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         return null;
     }
 
-
-
-    public static synchronized int getNextExecutionId() {
-        return EXECUTION_ID++;
-    }
-
     public boolean wantsToStop() {
         return mWantsToStop;
+    }
+
+    /**
+     * This service is only bound from inside the same process and never uses IPC.
+     */
+    class LocalBinder extends Binder {
+        public final TermuxService service = TermuxService.this;
     }
 
 }

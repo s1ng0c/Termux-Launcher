@@ -18,13 +18,19 @@ import javax.annotation.Nonnull;
 
 public class TermuxAppSharedProperties extends TermuxSharedProperties {
 
+    private static final String LOG_TAG = "TermuxAppSharedProperties";
     private ExtraKeysInfo mExtraKeysInfo;
     private List<KeyboardShortcut> mSessionShortcuts = new ArrayList<>();
 
-    private static final String LOG_TAG = "TermuxAppSharedProperties";
-
     public TermuxAppSharedProperties(@Nonnull Context context) {
         super(context);
+    }
+
+    /**
+     * Load the {@link TermuxPropertyConstants#KEY_TERMINAL_TRANSCRIPT_ROWS} value from termux properties file on disk.
+     */
+    public static int getTerminalTranscriptRows(Context context) {
+        return (int) TermuxSharedProperties.getInternalPropertyValue(context, TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS);
     }
 
     /**
@@ -58,7 +64,7 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
             try {
                 mExtraKeysInfo = new ExtraKeysInfo(TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE);
             } catch (JSONException e2) {
-                Logger.showToast(mContext, "Can't create default extra keys",true);
+                Logger.showToast(mContext, "Can't create default extra keys", true);
                 Logger.logStackTraceWithMessage(LOG_TAG, "Could create default extra keys: ", e);
                 mExtraKeysInfo = null;
             }
@@ -93,15 +99,6 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
 
     public ExtraKeysInfo getExtraKeysInfo() {
         return mExtraKeysInfo;
-    }
-
-
-
-    /**
-     * Load the {@link TermuxPropertyConstants#KEY_TERMINAL_TRANSCRIPT_ROWS} value from termux properties file on disk.
-     */
-    public static int getTerminalTranscriptRows(Context context) {
-        return  (int) TermuxSharedProperties.getInternalPropertyValue(context, TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS);
     }
 
 }

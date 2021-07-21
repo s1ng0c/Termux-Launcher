@@ -20,8 +20,8 @@ public class ShareUtils {
      * Open the system app chooser that allows the user to select which app to send the intent.
      *
      * @param context The context for operations.
-     * @param intent The intent that describes the choices that should be shown.
-     * @param title The title for choose menu.
+     * @param intent  The intent that describes the choices that should be shown.
+     * @param title   The title for choose menu.
      */
     private static void openSystemAppChooser(final Context context, final Intent intent, final String title) {
         if (context == null) return;
@@ -38,7 +38,7 @@ public class ShareUtils {
      *
      * @param context The context for operations.
      * @param subject The subject for sharing.
-     * @param text The text to share.
+     * @param text    The text to share.
      */
     public static void shareText(final Context context, final String subject, final String text) {
         if (context == null) return;
@@ -54,8 +54,8 @@ public class ShareUtils {
     /**
      * Copy the text to clipboard.
      *
-     * @param context The context for operations.
-     * @param text The text to copy.
+     * @param context     The context for operations.
+     * @param text        The text to copy.
      * @param toastString If this is not {@code null} or empty, then a toast is shown if copying to
      *                    clipboard is successful.
      */
@@ -75,7 +75,7 @@ public class ShareUtils {
      * Open a url.
      *
      * @param context The context for operations.
-     * @param url The url to open.
+     * @param url     The url to open.
      */
     public static void openURL(final Context context, final String url) {
         if (context == null || url == null || url.isEmpty()) return;

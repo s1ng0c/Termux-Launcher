@@ -1,6 +1,8 @@
 package com.termux.shared.models.errors;
 
-/** The {@link Class} that defines FileUtils error messages and codes. */
+/**
+ * The {@link Class} that defines FileUtils error messages and codes.
+ */
 public class FileUtilsErrno extends Errno {
 
     public static final String TYPE = "FileUtils Error";
@@ -14,7 +16,6 @@ public class FileUtilsErrno extends Errno {
     public static final Errno ERRNO_NULL_OR_EMPTY_EXECUTABLE_FILE = new Errno(TYPE, 104, "The executable file is null or empty.");
     public static final Errno ERRNO_NULL_OR_EMPTY_DIRECTORY_FILE_PATH = new Errno(TYPE, 105, "The directory file path is null or empty.");
     public static final Errno ERRNO_NULL_OR_EMPTY_DIRECTORY_FILE = new Errno(TYPE, 106, "The directory file is null or empty.");
-
 
 
     /* Errors for invalid or not found files at path (150-200) */
@@ -33,14 +34,12 @@ public class FileUtilsErrno extends Errno {
     public static final Errno ERRNO_VALIDATE_DIRECTORY_EXISTENCE_AND_PERMISSIONS_FAILED_WITH_EXCEPTION = new Errno(TYPE, 158, "Validating directory existence and permissions of %1$s at path \"%2$s\" failed.\nException: %3$s");
 
 
-
     /* Errors for file creation (200-250) */
     public static final Errno ERRNO_CREATING_FILE_FAILED = new Errno(TYPE, 200, "Creating %1$s at path \"%2$s\" failed.");
     public static final Errno ERRNO_CREATING_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 201, "Creating %1$s at path \"%2$s\" failed.\nException: %3$s");
 
     public static final Errno ERRNO_CANNOT_OVERWRITE_A_NON_SYMLINK_FILE_TYPE = new Errno(TYPE, 202, "Cannot overwrite %1$s while creating symlink at \"%2$s\" to \"%3$s\" since destination file type \"%4$s\" is not a symlink.");
     public static final Errno ERRNO_CREATING_SYMLINK_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 203, "Creating %1$s at path \"%2$s\" to \"%3$s\" failed.\nException: %4$s");
-
 
 
     /* Errors for file copying and moving (250-300) */
@@ -50,7 +49,6 @@ public class FileUtilsErrno extends Errno {
     public static final Errno ERRNO_CANNOT_MOVE_DIRECTORY_TO_SUB_DIRECTORY_OF_ITSELF = new Errno(TYPE, 253, "Cannot move %1$s from \"%2$s\" to \"%3$s\" since destination is a subdirectory of the source.");
 
 
-
     /* Errors for file deletion (300-350) */
     public static final Errno ERRNO_DELETING_FILE_FAILED = new Errno(TYPE, 300, "Deleting %1$s at path \"%2$s\" failed.");
     public static final Errno ERRNO_DELETING_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 301, "Deleting %1$s at path \"%2$s\" failed.\nException: %3$s");
@@ -58,13 +56,11 @@ public class FileUtilsErrno extends Errno {
     public static final Errno ERRNO_FILE_STILL_EXISTS_AFTER_DELETING = new Errno(TYPE, 303, "The %1$s still exists after deleting it from \"%2$s\".");
 
 
-
     /* Errors for file reading and writing (350-400) */
     public static final Errno ERRNO_READING_STRING_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 350, "Reading string from %1$s at path \"%2$s\" failed.\nException: %3$s");
     public static final Errno ERRNO_WRITING_STRING_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 351, "Writing string to %1$s at path \"%2$s\" failed.\nException: %3$s");
     public static final Errno ERRNO_UNSUPPORTED_CHARSET = new Errno(TYPE, 352, "Unsupported charset \"%1$s\"");
     public static final Errno ERRNO_CHECKING_IF_CHARSET_SUPPORTED_FAILED = new Errno(TYPE, 353, "Checking if charset \"%1$s\" is supported failed.\nException: %2$s");
-
 
 
     /* Errors for invalid file permissions (400-450) */

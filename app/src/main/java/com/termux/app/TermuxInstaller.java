@@ -53,7 +53,9 @@ final class TermuxInstaller {
 
     private static final String LOG_TAG = "TermuxInstaller";
 
-    /** Performs bootstrap setup if necessary. */
+    /**
+     * Performs bootstrap setup if necessary.
+     */
     static void setupBootstrapIfNeeded(final Activity activity, final Runnable whenDone) {
         String bootstrapErrorMessage;
         Error filesDirectoryAccessibleError;
@@ -90,9 +92,9 @@ final class TermuxInstaller {
 
         // If prefix directory exists, even if its a symlink to a valid directory and symlink is not broken/dangling
         if (FileUtils.directoryFileExists(PREFIX_FILE_PATH, true)) {
-            File[] PREFIX_FILE_LIST =  PREFIX_FILE.listFiles();
+            File[] PREFIX_FILE_LIST = PREFIX_FILE.listFiles();
             // If prefix directory is empty or only contains the tmp directory
-            if(PREFIX_FILE_LIST == null || PREFIX_FILE_LIST.length == 0 || (PREFIX_FILE_LIST.length == 1 && TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH.equals(PREFIX_FILE_LIST[0].getAbsolutePath()))) {
+            if (PREFIX_FILE_LIST == null || PREFIX_FILE_LIST.length == 0 || (PREFIX_FILE_LIST.length == 1 && TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH.equals(PREFIX_FILE_LIST[0].getAbsolutePath()))) {
                 Logger.logInfo(LOG_TAG, "The prefix directory \"" + PREFIX_FILE_PATH + "\" exists but is empty or only contains the tmp directory.");
             } else {
                 whenDone.run();

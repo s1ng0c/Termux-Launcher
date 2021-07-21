@@ -16,15 +16,10 @@ import com.termux.app.TermuxActivity;
  */
 public class FullScreenWorkAround {
     private final View mChildOfContent;
-    private int mUsableHeightPrevious;
     private final ViewGroup.LayoutParams mViewGroupLayoutParams;
-
     private final int mNavBarHeight;
+    private int mUsableHeightPrevious;
 
-
-    public static void apply(TermuxActivity activity) {
-        new FullScreenWorkAround(activity);
-    }
 
     private FullScreenWorkAround(TermuxActivity activity) {
         ViewGroup content = activity.findViewById(android.R.id.content);
@@ -32,6 +27,10 @@ public class FullScreenWorkAround {
         mViewGroupLayoutParams = mChildOfContent.getLayoutParams();
         mNavBarHeight = activity.getNavBarHeight();
         mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
+    }
+
+    public static void apply(TermuxActivity activity) {
+        new FullScreenWorkAround(activity);
     }
 
     private void possiblyResizeChildOfContent() {

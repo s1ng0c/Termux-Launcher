@@ -13,15 +13,15 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import com.termux.R;
-import com.termux.shared.shell.TermuxSession;
-import com.termux.shared.interact.TextInputDialogUtils;
 import com.termux.app.TermuxActivity;
+import com.termux.app.TermuxService;
+import com.termux.app.terminal.io.BellHandler;
+import com.termux.shared.interact.TextInputDialogUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.settings.properties.TermuxPropertyConstants;
+import com.termux.shared.shell.TermuxSession;
 import com.termux.shared.terminal.TermuxTerminalSessionClientBase;
 import com.termux.shared.termux.TermuxConstants;
-import com.termux.app.TermuxService;
-import com.termux.shared.settings.properties.TermuxPropertyConstants;
-import com.termux.app.terminal.io.BellHandler;
-import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TextStyle;
@@ -33,15 +33,11 @@ import java.util.Properties;
 
 public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase {
 
-    private final TermuxActivity mActivity;
-
     private static final int MAX_SESSIONS = 8;
-
-    private SoundPool mBellSoundPool;
-
-    private int mBellSoundId;
-
     private static final String LOG_TAG = "TermuxTerminalSessionClient";
+    private final TermuxActivity mActivity;
+    private SoundPool mBellSoundPool;
+    private int mBellSoundId;
 
     public TermuxTerminalSessionClient(TermuxActivity activity) {
         this.mActivity = activity;
@@ -106,12 +102,12 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
 
-
     @Override
     public void onTextChanged(TerminalSession changedSession) {
         if (!mActivity.isVisible()) return;
 
-        if (mActivity.getCurrentSession() == changedSession) mActivity.getTerminalView().onScreenUpdated();
+        if (mActivity.getCurrentSession() == changedSession)
+            mActivity.getTerminalView().onScreenUpdated();
     }
 
     @Override
@@ -177,7 +173,8 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         ClipData clipData = clipboard.getPrimaryClip();
         if (clipData != null) {
             CharSequence paste = clipData.getItemAt(0).coerceToText(mActivity);
-            if (!TextUtils.isEmpty(paste)) mActivity.getTerminalView().mEmulator.paste(paste.toString());
+            if (!TextUtils.isEmpty(paste))
+                mActivity.getTerminalView().mEmulator.paste(paste.toString());
         }
     }
 
@@ -227,15 +224,15 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
 
-
     @Override
     public Integer getTerminalCursorStyle() {
         return mActivity.getProperties().getTerminalCursorStyle();
     }
 
 
-
-    /** Initialize and get mBellSoundPool */
+    /**
+     * Initialize and get mBellSoundPool
+     */
     private synchronized SoundPool getBellSoundPool() {
         if (mBellSoundPool == null) {
             mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
@@ -248,7 +245,9 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         return mBellSoundPool;
     }
 
-    /** Release mBellSoundPool resources */
+    /**
+     * Release mBellSoundPool resources
+     */
     private synchronized void releaseBellSoundPool() {
         if (mBellSoundPool != null) {
             mBellSoundPool.release();
@@ -257,8 +256,9 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
 
-
-    /** Try switching to session. */
+    /**
+     * Try switching to session.
+     */
     public void setCurrentSession(TerminalSession session) {
         if (session == null) return;
 
@@ -354,7 +354,9 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
             mActivity.getPreferences().setCurrentSession(null);
     }
 
-    /** The current session as stored or the last one if that does not exist. */
+    /**
+     * The current session as stored or the last one if that does not exist.
+     */
     public TerminalSession getCurrentStoredSessionOrLast() {
         TerminalSession stored = getCurrentStoredSession();
 

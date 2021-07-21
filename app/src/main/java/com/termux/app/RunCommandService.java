@@ -10,36 +10,31 @@ import android.os.Build;
 import android.os.IBinder;
 
 import com.termux.R;
+import com.termux.app.utils.PluginUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.data.IntentUtils;
+import com.termux.shared.file.FileUtils;
 import com.termux.shared.file.TermuxFileUtils;
 import com.termux.shared.file.filesystem.FileType;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.errors.Errno;
 import com.termux.shared.models.errors.Error;
+import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.notification.NotificationUtils;
-import com.termux.app.utils.PluginUtils;
-import com.termux.shared.models.ExecutionCommand;
 
 /**
  * A service that receives {@link RUN_COMMAND_SERVICE#ACTION_RUN_COMMAND} intent from third party apps and
  * plugins that contains info on command execution and forwards the extras to {@link TermuxService}
  * for the actual execution.
- *
+ * <p>
  * Check https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent for more info.
  */
 public class RunCommandService extends Service {
 
     private static final String LOG_TAG = "RunCommandService";
-
-    class LocalBinder extends Binder {
-        public final RunCommandService service = RunCommandService.this;
-    }
-
     private final IBinder mBinder = new RunCommandService.LocalBinder();
 
     @Override
@@ -80,15 +75,15 @@ public class RunCommandService extends Service {
         executionCommand.arguments = IntentUtils.getStringArrayExtraIfSet(intent, RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS, null);
 
         /*
-        * If intent was sent with `am` command, then normal comma characters may have been replaced
-        * with alternate characters if a normal comma existed in an argument itself to prevent it
-        * splitting into multiple arguments by `am` command.
-        * If `tudo` or `sudo` are used, then simply using their `-r` and `--comma-alternative` command
-        * options can be used without passing the below extras, but native supports is helpful if
-        * they are not being used.
-        * https://github.com/agnostic-apollo/tudo#passing-arguments-using-run_command-intent
-        * https://android.googlesource.com/platform/frameworks/base/+/21bdaf1/cmds/am/src/com/android/commands/am/Am.java#572
-        */
+         * If intent was sent with `am` command, then normal comma characters may have been replaced
+         * with alternate characters if a normal comma existed in an argument itself to prevent it
+         * splitting into multiple arguments by `am` command.
+         * If `tudo` or `sudo` are used, then simply using their `-r` and `--comma-alternative` command
+         * options can be used without passing the below extras, but native supports is helpful if
+         * they are not being used.
+         * https://github.com/agnostic-apollo/tudo#passing-arguments-using-run_command-intent
+         * https://android.googlesource.com/platform/frameworks/base/+/21bdaf1/cmds/am/src/com/android/commands/am/Am.java#572
+         */
         boolean replaceCommaAlternativeCharsInArguments = intent.getBooleanExtra(RUN_COMMAND_SERVICE.EXTRA_REPLACE_COMMA_ALTERNATIVE_CHARS_IN_ARGUMENTS, false);
         if (replaceCommaAlternativeCharsInArguments) {
             String commaAlternativeCharsInArguments = IntentUtils.getStringExtraIfSet(intent, RUN_COMMAND_SERVICE.EXTRA_COMMA_ALTERNATIVE_CHARS_IN_ARGUMENTS, null);
@@ -129,10 +124,9 @@ public class RunCommandService extends Service {
         }
 
 
-
         // If executable is null or empty, then exit here instead of getting canonical path which would expand to "/"
         if (executionCommand.executable == null || executionCommand.executable.isEmpty()) {
-            errmsg  = this.getString(R.string.error_run_command_service_mandatory_extra_missing, RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
+            errmsg = this.getString(R.string.error_run_command_service_mandatory_extra_missing, RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
             return Service.START_NOT_STICKY;
@@ -152,7 +146,6 @@ public class RunCommandService extends Service {
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
             return Service.START_NOT_STICKY;
         }
-
 
 
         // If workingDirectory is not null or empty
@@ -195,7 +188,8 @@ public class RunCommandService extends Service {
         execIntent.setClass(this, TermuxService.class);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, executionCommand.arguments);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_STDIN, executionCommand.stdin);
-        if (executionCommand.workingDirectory != null && !executionCommand.workingDirectory.isEmpty()) execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, executionCommand.workingDirectory);
+        if (executionCommand.workingDirectory != null && !executionCommand.workingDirectory.isEmpty())
+            execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, executionCommand.workingDirectory);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, executionCommand.inBackground);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION, executionCommand.sessionAction);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_COMMAND_LABEL, executionCommand.commandLabel);
@@ -239,11 +233,11 @@ public class RunCommandService extends Service {
 
     private Notification buildNotification() {
         // Build the notification
-        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
+        Notification.Builder builder = NotificationUtils.geNotificationBuilder(this,
             TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_LOW,
             TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, null, null,
             null, NotificationUtils.NOTIFICATION_MODE_SILENT);
-        if (builder == null)  return null;
+        if (builder == null) return null;
 
         // No need to show a timestamp:
         builder.setShowWhen(false);
@@ -262,6 +256,10 @@ public class RunCommandService extends Service {
 
         NotificationUtils.setupNotificationChannel(this, TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID,
             TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+    }
+
+    class LocalBinder extends Binder {
+        public final RunCommandService service = RunCommandService.this;
     }
 
 }

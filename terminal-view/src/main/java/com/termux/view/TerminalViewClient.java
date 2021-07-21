@@ -22,7 +22,6 @@ public interface TerminalViewClient {
     float onScale(float scale);
 
 
-
     /**
      * On a single tap on the terminal if terminal mouse reporting not enabled.
      */
@@ -35,9 +34,7 @@ public interface TerminalViewClient {
     boolean shouldUseCtrlSpaceWorkaround();
 
 
-
     void copyModeChanged(boolean copyMode);
-
 
 
     boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession session);
@@ -45,7 +42,6 @@ public interface TerminalViewClient {
     boolean onKeyUp(int keyCode, KeyEvent e);
 
     boolean onLongPress(MotionEvent event);
-
 
 
     boolean readControlKey();

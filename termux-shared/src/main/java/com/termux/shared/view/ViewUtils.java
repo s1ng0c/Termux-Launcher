@@ -17,10 +17,11 @@ import com.termux.shared.logger.Logger;
 
 public class ViewUtils {
 
-    /** Log root view events. */
-    public static boolean VIEW_UTILS_LOGGING_ENABLED = false;
-
     private static final String LOG_TAG = "ViewUtils";
+    /**
+     * Log root view events.
+     */
+    public static boolean VIEW_UTILS_LOGGING_ENABLED = false;
 
     /**
      * Sets whether view utils logging is enabled or not.
@@ -33,10 +34,10 @@ public class ViewUtils {
 
     /**
      * Check if a {@link View} is fully visible and not hidden or partially covered by another view.
-     *
+     * <p>
      * https://stackoverflow.com/a/51078418/14686958
      *
-     * @param view The {@link View} to check.
+     * @param view            The {@link View} to check.
      * @param statusBarHeight The status bar height received by {@link View.OnApplyWindowInsetsListener}.
      * @return Returns {@code true} if view is fully visible.
      */
@@ -50,10 +51,10 @@ public class ViewUtils {
     /**
      * Get the {@link Rect} of a {@link View} and the  {@link Rect} of the window inside which it
      * exists.
-     *
+     * <p>
      * https://stackoverflow.com/a/51078418/14686958
      *
-     * @param view The {@link View} inside the window whose {@link Rect} to get.
+     * @param view            The {@link View} inside the window whose {@link Rect} to get.
      * @param statusBarHeight The status bar height received by {@link View.OnApplyWindowInsetsListener}.
      * @return Returns {@link Rect[]} if view is visible where Rect[0] will contain window
      * {@link Rect} and Rect[1] will contain view {@link Rect}. This will be {@code null}
@@ -158,7 +159,7 @@ public class ViewUtils {
 
     /**
      * Get device orientation.
-     *
+     * <p>
      * Related: https://stackoverflow.com/a/29392593/14686958
      *
      * @param context The {@link Context} to check with.
@@ -172,12 +173,12 @@ public class ViewUtils {
     /**
      * Get device display size.
      *
-     * @param context The {@link Context} to check with.
+     * @param context      The {@link Context} to check with.
      * @param activitySize The set to {@link true}, then size returned will be that of the activity
      *                     and can be smaller than physical display size in multi-window mode.
      * @return Returns the display size as {@link Point}.
      */
-    public static Point getDisplaySize( @NonNull Context context, boolean activitySize) {
+    public static Point getDisplaySize(@NonNull Context context, boolean activitySize) {
         // android.view.WindowManager.getDefaultDisplay() and Display.getSize() are deprecated in
         // API 30 and give wrong values in API 30 for activitySize=false in multi-window
         androidx.window.WindowManager windowManager = new androidx.window.WindowManager(context);
@@ -189,31 +190,39 @@ public class ViewUtils {
         return new Point(windowMetrics.getBounds().width(), windowMetrics.getBounds().height());
     }
 
-    /** Convert {@link Rect} to {@link String}. */
+    /**
+     * Convert {@link Rect} to {@link String}.
+     */
     public static String toRectString(Rect rect) {
         if (rect == null) return "null";
         return "(" + rect.left + "," + rect.top + "), (" + rect.right + "," + rect.bottom + ")";
     }
 
-    /** Convert {@link Point} to {@link String}. */
+    /**
+     * Convert {@link Point} to {@link String}.
+     */
     public static String toPointString(Point point) {
         if (point == null) return "null";
         return "(" + point.x + "," + point.y + ")";
     }
 
-    /** Get the {@link Activity} associated with the {@link Context} if available. */
+    /**
+     * Get the {@link Activity} associated with the {@link Context} if available.
+     */
     @Nullable
     public static Activity getActivity(Context context) {
         while (context instanceof ContextWrapper) {
             if (context instanceof Activity) {
-                return (Activity)context;
+                return (Activity) context;
             }
-            context = ((ContextWrapper)context).getBaseContext();
+            context = ((ContextWrapper) context).getBaseContext();
         }
         return null;
     }
 
-    /** Convert value in device independent pixels (dp) to pixels (px) units. */
+    /**
+     * Convert value in device independent pixels (dp) to pixels (px) units.
+     */
     public static int dpToPx(Context context, int dp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }

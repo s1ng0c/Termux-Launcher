@@ -9,29 +9,29 @@ import android.content.Intent;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
+import com.termux.app.models.UserAction;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.data.DataUtils;
 import com.termux.shared.file.TermuxFileUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.models.ExecutionCommand;
+import com.termux.shared.models.ReportInfo;
 import com.termux.shared.models.ResultConfig;
 import com.termux.shared.models.ResultData;
 import com.termux.shared.models.errors.Errno;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.notification.TermuxNotificationUtils;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
+import com.termux.shared.settings.properties.SharedProperties;
+import com.termux.shared.settings.properties.TermuxPropertyConstants;
 import com.termux.shared.shell.ResultSender;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
-import com.termux.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
-import com.termux.shared.settings.properties.SharedProperties;
-import com.termux.shared.settings.properties.TermuxPropertyConstants;
-import com.termux.shared.models.ReportInfo;
-import com.termux.shared.models.ExecutionCommand;
-import com.termux.app.models.UserAction;
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.termux.TermuxUtils;
 
 public class PluginUtils {
@@ -40,15 +40,15 @@ public class PluginUtils {
 
     /**
      * Process {@link ExecutionCommand} result.
-     *
+     * <p>
      * The ExecutionCommand currentState must be greater or equal to
      * {@link ExecutionCommand.ExecutionState#EXECUTED}.
      * If the {@link ExecutionCommand#isPluginExecutionCommand} is {@code true} and
      * {@link ResultConfig#resultPendingIntent} or {@link ResultConfig#resultDirectoryPath}
      * is not {@code null}, then the result of commands are sent back to the command caller.
      *
-     * @param context The {@link Context} that will be used to send result intent to the {@link PendingIntent} creator.
-     * @param logTag The log tag to use for logging.
+     * @param context          The {@link Context} that will be used to send result intent to the {@link PendingIntent} creator.
+     * @param logTag           The log tag to use for logging.
      * @param executionCommand The {@link ExecutionCommand} to process.
      */
     public static void processPluginExecutionCommandResult(final Context context, String logTag, final ExecutionCommand executionCommand) {
@@ -96,24 +96,24 @@ public class PluginUtils {
 
     /**
      * Process {@link ExecutionCommand} error.
-     *
+     * <p>
      * The ExecutionCommand currentState must be equal to {@link ExecutionCommand.ExecutionState#FAILED}.
      * The {@link ResultData#getErrCode()} must have been set to a value greater than
      * {@link Errno#ERRNO_SUCCESS}.
      * The {@link ResultData#errorsList} must also be set with appropriate error info.
-     *
+     * <p>
      * If the {@link ExecutionCommand#isPluginExecutionCommand} is {@code true} and
      * {@link ResultConfig#resultPendingIntent} or {@link ResultConfig#resultDirectoryPath}
      * is not {@code null}, then the errors of commands are sent back to the command caller.
-     *
+     * <p>
      * Otherwise if the {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED} is
      * enabled, then a flash and a notification will be shown for the error as well
      * on the {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME} channel instead of just logging
      * the error.
      *
-     * @param context The {@link Context} for operations.
-     * @param logTag The log tag to use for logging.
-     * @param executionCommand The {@link ExecutionCommand} that failed.
+     * @param context           The {@link Context} for operations.
+     * @param logTag            The log tag to use for logging.
+     * @param executionCommand  The {@link ExecutionCommand} that failed.
      * @param forceNotification If set to {@code true}, then a flash and notification will be shown
      *                          regardless of if pending intent is {@code null} or
      *                          {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
@@ -170,8 +170,10 @@ public class PluginUtils {
 
     }
 
-    /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData)}
-     * to send back the result via {@link ResultConfig#resultPendingIntent}. */
+    /**
+     * Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData)}
+     * to send back the result via {@link ResultConfig#resultPendingIntent}.
+     */
     public static void setPluginResultPendingIntentVariables(ExecutionCommand executionCommand) {
         ResultConfig resultConfig = executionCommand.resultConfig;
 
@@ -185,8 +187,10 @@ public class PluginUtils {
         resultConfig.resultErrmsgKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG;
     }
 
-    /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData)}
-     * to send back the result by writing it to files in {@link ResultConfig#resultDirectoryPath}. */
+    /**
+     * Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData)}
+     * to send back the result by writing it to files in {@link ResultConfig#resultDirectoryPath}.
+     */
     public static void setPluginResultDirectoryVariables(ExecutionCommand executionCommand) {
         ResultConfig resultConfig = executionCommand.resultConfig;
 
@@ -199,13 +203,12 @@ public class PluginUtils {
     }
 
 
-
     /**
      * Send an error notification for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
      * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
      *
-     * @param context The {@link Context} for operations.
-     * @param executionCommand The {@link ExecutionCommand} that failed.
+     * @param context                The {@link Context} for operations.
+     * @param executionCommand       The {@link ExecutionCommand} that failed.
      * @param notificationTextString The text of the notification.
      */
     public static void sendPluginCommandErrorNotification(Context context, String logTag, ExecutionCommand executionCommand, String notificationTextString) {
@@ -219,7 +222,7 @@ public class PluginUtils {
         reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
         reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
-        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND.getName(), logTag, title, null, reportString.toString(), null,true));
+        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND.getName(), logTag, title, null, reportString.toString(), null, true));
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Setup the notification channel if not already set up
@@ -244,22 +247,22 @@ public class PluginUtils {
      * Get {@link Notification.Builder} for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
      * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
      *
-     * @param context The {@link Context} for operations.
-     * @param title The title for the notification.
-     * @param notificationText The second line text of the notification.
+     * @param context             The {@link Context} for operations.
+     * @param title               The title for the notification.
+     * @param notificationText    The second line text of the notification.
      * @param notificationBigText The full text of the notification that may optionally be styled.
-     * @param pendingIntent The {@link PendingIntent} which should be sent when notification is clicked.
-     * @param notificationMode The notification mode. It must be one of {@code NotificationUtils.NOTIFICATION_MODE_*}.
+     * @param pendingIntent       The {@link PendingIntent} which should be sent when notification is clicked.
+     * @param notificationMode    The notification mode. It must be one of {@code NotificationUtils.NOTIFICATION_MODE_*}.
      * @return Returns the {@link Notification.Builder}.
      */
     @Nullable
     public static Notification.Builder getPluginCommandErrorsNotificationBuilder(final Context context, final CharSequence title, final CharSequence notificationText, final CharSequence notificationBigText, final PendingIntent pendingIntent, final int notificationMode) {
 
-        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(context,
+        Notification.Builder builder = NotificationUtils.geNotificationBuilder(context,
             TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
             title, notificationText, notificationBigText, pendingIntent, notificationMode);
 
-        if (builder == null)  return null;
+        if (builder == null) return null;
 
         // Enable timestamp
         builder.setShowWhen(true);
@@ -286,7 +289,6 @@ public class PluginUtils {
         NotificationUtils.setupNotificationChannel(context, TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID,
             TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
     }
-
 
 
     /**

@@ -17,21 +17,15 @@ import java.nio.charset.Charset;
  */
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
+    private static final String LOG_TAG = "CrashUtils";
     private final Context mContext;
     private final CrashHandlerClient mCrashHandlerClient;
     private final Thread.UncaughtExceptionHandler defaultUEH;
-
-    private static final String LOG_TAG = "CrashUtils";
 
     private CrashHandler(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient) {
         this.mContext = context;
         this.mCrashHandlerClient = crashHandlerClient;
         this.defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
-    }
-
-    public void uncaughtException(@NonNull Thread thread, @NonNull Throwable throwable) {
-        logCrash(mContext, mCrashHandlerClient, thread, throwable);
-        defaultUEH.uncaughtException(thread, throwable);
     }
 
     /**
@@ -46,10 +40,10 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     /**
      * Log a crash in the crash log file at {@code crashlogFilePath}.
      *
-     * @param context The {@link Context} for operations.
+     * @param context            The {@link Context} for operations.
      * @param crashHandlerClient The {@link CrashHandlerClient} implementation.
-     * @param thread The {@link Thread} in which the crash happened.
-     * @param throwable The {@link Throwable} thrown for the crash.
+     * @param thread             The {@link Thread} in which the crash happened.
+     * @param throwable          The {@link Throwable} thrown for the crash.
      */
     public static void logCrash(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient, final Thread thread, final Throwable throwable) {
         StringBuilder reportString = new StringBuilder();
@@ -71,10 +65,15 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
         // Write report string to crash log file
         Error error = FileUtils.writeStringToFile("crash log", crashHandlerClient.getCrashLogFilePath(context),
-                        Charset.defaultCharset(), reportString.toString(), false);
+            Charset.defaultCharset(), reportString.toString(), false);
         if (error != null) {
             Logger.logErrorExtended(LOG_TAG, error.toString());
         }
+    }
+
+    public void uncaughtException(@NonNull Thread thread, @NonNull Throwable throwable) {
+        logCrash(mContext, mCrashHandlerClient, thread, throwable);
+        defaultUEH.uncaughtException(thread, throwable);
     }
 
     public interface CrashHandlerClient {

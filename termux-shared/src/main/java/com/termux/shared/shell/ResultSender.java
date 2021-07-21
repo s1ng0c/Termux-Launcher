@@ -8,12 +8,12 @@ import android.os.Bundle;
 
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
-import com.termux.shared.markdown.MarkdownUtils;
-import com.termux.shared.models.errors.Error;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.ResultConfig;
 import com.termux.shared.models.ResultData;
+import com.termux.shared.models.errors.Error;
 import com.termux.shared.models.errors.FunctionErrno;
 import com.termux.shared.models.errors.ResultSenderErrno;
 import com.termux.shared.termux.AndroidUtils;
@@ -29,11 +29,11 @@ public class ResultSender {
      * {@link ResultConfig#resultDirectoryPath}. If both are not {@code null}, then result will be
      * sent via both.
      *
-     * @param context The {@link Context} for operations.
-     * @param logTag The log tag to use for logging.
-     * @param label The label for the command.
+     * @param context      The {@link Context} for operations.
+     * @param logTag       The log tag to use for logging.
+     * @param label        The label for the command.
      * @param resultConfig The {@link ResultConfig} object containing information on how to send the result.
-     * @param resultData The {@link ResultData} object containing result data.
+     * @param resultData   The {@link ResultData} object containing result data.
      * @return Returns the {@link Error} if failed to send the result, otherwise {@code null}.
      */
     public static Error sendCommandResultData(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData) {
@@ -58,11 +58,11 @@ public class ResultSender {
     /**
      * Send result stored in {@link ResultConfig} to command caller via {@link ResultConfig#resultPendingIntent}.
      *
-     * @param context The {@link Context} for operations.
-     * @param logTag The log tag to use for logging.
-     * @param label The label for the command.
+     * @param context      The {@link Context} for operations.
+     * @param logTag       The log tag to use for logging.
+     * @param label        The label for the command.
      * @param resultConfig The {@link ResultConfig} object containing information on how to send the result.
-     * @param resultData The {@link ResultData} object containing result data.
+     * @param resultData   The {@link ResultData} object containing result data.
      * @return Returns the {@link Error} if failed to send the result, otherwise {@code null}.
      */
     public static Error sendCommandResultDataWithPendingIntent(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData) {
@@ -147,11 +147,11 @@ public class ResultSender {
      * Send result stored in {@link ResultConfig} to command caller by writing it to files in
      * {@link ResultConfig#resultDirectoryPath}.
      *
-     * @param context The {@link Context} for operations.
-     * @param logTag The log tag to use for logging.
-     * @param label The label for the command.
+     * @param context      The {@link Context} for operations.
+     * @param logTag       The log tag to use for logging.
+     * @param label        The label for the command.
      * @param resultConfig The {@link ResultConfig} object containing information on how to send the result.
-     * @param resultData The {@link ResultData} object containing result data.
+     * @param resultData   The {@link ResultData} object containing result data.
      * @return Returns the {@link Error} if failed to send the result, otherwise {@code null}.
      */
     public static Error sendCommandResultDataToDirectory(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData) {
@@ -196,7 +196,7 @@ public class ResultSender {
         if (resultConfig.resultSingleFile) {
             // If resultFileBasename is null, empty or contains forward slashes "/"
             if (DataUtils.isNullOrEmpty(resultConfig.resultFileBasename) ||
-                    resultConfig.resultFileBasename.contains("/")) {
+                resultConfig.resultFileBasename.contains("/")) {
                 error = ResultSenderErrno.ERROR_RESULT_FILE_BASENAME_NULL_OR_INVALID.getError(resultConfig.resultFileBasename);
                 return error;
             }
@@ -324,7 +324,8 @@ public class ResultSender {
 
             // Write errCode to temp file
             String temp_filename = RESULT_SENDER.RESULT_FILE_ERR_PREFIX + "-" + AndroidUtils.getCurrentMilliSecondLocalTimeStamp();
-            if (!resultConfig.resultFilesSuffix.isEmpty()) temp_filename = temp_filename + "-" + resultConfig.resultFilesSuffix;
+            if (!resultConfig.resultFilesSuffix.isEmpty())
+                temp_filename = temp_filename + "-" + resultConfig.resultFilesSuffix;
             error = FileUtils.writeStringToFile(temp_filename, resultConfig.resultDirectoryPath + "/" + temp_filename,
                 null, String.valueOf(resultData.getErrCode()), false);
             if (error != null) {

@@ -5,19 +5,6 @@ import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.AttributeSet;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ScheduledExecutorService;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
@@ -27,30 +14,29 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.PopupWindow;
 
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.termux.R;
 import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.view.TerminalView;
 
-import androidx.drawerlayout.widget.DrawerLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * A view showing extra keys (such as Escape, Ctrl, Alt) not normally available on an Android soft
  * keyboard.
  */
 public final class ExtraKeysView extends GridLayout {
-
-    private static final int TEXT_COLOR = 0xFFFFFFFF;
-    private static final int BUTTON_COLOR = 0x00000000;
-    private static final int INTERESTING_COLOR = 0xFF80DEEA;
-    private static final int BUTTON_PRESSED_COLOR = 0xFF7F7F7F;
-
-    TermuxTerminalViewClient mTermuxTerminalViewClient;
-    TermuxTerminalSessionClient mTermuxTerminalSessionClient;
-
-    public ExtraKeysView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
 
     static final Map<String, Integer> keyCodesForString = new HashMap<String, Integer>() {{
         put("SPACE", KeyEvent.KEYCODE_SPACE);
@@ -81,18 +67,47 @@ public final class ExtraKeysView extends GridLayout {
         put("F11", KeyEvent.KEYCODE_F11);
         put("F12", KeyEvent.KEYCODE_F12);
     }};
+    private static final int TEXT_COLOR = 0xFFFFFFFF;
+    private static final int BUTTON_COLOR = 0x00000000;
+    private static final int INTERESTING_COLOR = 0xFF80DEEA;
+    private static final int BUTTON_PRESSED_COLOR = 0xFF7F7F7F;
+    private final Map<SpecialButton, SpecialButtonState> specialButtons = new HashMap<SpecialButton, SpecialButtonState>() {{
+        put(SpecialButton.CTRL, new SpecialButtonState());
+        put(SpecialButton.ALT, new SpecialButtonState());
+        put(SpecialButton.FN, new SpecialButtonState());
+    }};
+    private final Set<String> specialButtonsKeys = specialButtons.keySet().stream().map(Enum::name).collect(Collectors.toSet());
+    TermuxTerminalViewClient mTermuxTerminalViewClient;
+    TermuxTerminalSessionClient mTermuxTerminalSessionClient;
+    private ScheduledExecutorService scheduledExecutor;
+    private PopupWindow popupWindow;
+    private int longPressCount;
+
+    public ExtraKeysView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    /**
+     * General util function to compute the longest column length in a matrix.
+     */
+    static int maximumLength(Object[][] matrix) {
+        int m = 0;
+        for (Object[] row : matrix)
+            m = Math.max(m, row.length);
+        return m;
+    }
 
     @SuppressLint("RtlHardcoded")
     private void sendKey(View view, String keyName, boolean forceCtrlDown, boolean forceLeftAltDown) {
         TerminalView terminalView = view.findViewById(R.id.terminal_view);
         if ("KEYBOARD".equals(keyName)) {
-            if(mTermuxTerminalViewClient != null)
+            if (mTermuxTerminalViewClient != null)
                 mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
         } else if ("DRAWER".equals(keyName)) {
             DrawerLayout drawer = view.findViewById(R.id.drawer_layout);
             drawer.openDrawer(Gravity.LEFT);
         } else if ("PASTE".equals(keyName)) {
-            if(mTermuxTerminalSessionClient != null)
+            if (mTermuxTerminalSessionClient != null)
                 mTermuxTerminalSessionClient.onPasteTextFromClipboard(null);
         } else if (keyCodesForString.containsKey(keyName)) {
             Integer keyCode = keyCodesForString.get(keyName);
@@ -135,36 +150,9 @@ public final class ExtraKeysView extends GridLayout {
         }
     }
 
-    public enum SpecialButton {
-        CTRL, ALT, FN
-    }
-
-    private static class SpecialButtonState {
-        boolean isOn = false;
-        boolean isActive = false;
-        List<Button> buttons = new ArrayList<>();
-
-        void setIsActive(boolean value) {
-            isActive = value;
-            buttons.forEach(button -> button.setTextColor(value ? INTERESTING_COLOR : TEXT_COLOR));
-        }
-    }
-
-    private final Map<SpecialButton, SpecialButtonState> specialButtons = new HashMap<SpecialButton, SpecialButtonState>() {{
-        put(SpecialButton.CTRL, new SpecialButtonState());
-        put(SpecialButton.ALT, new SpecialButtonState());
-        put(SpecialButton.FN, new SpecialButtonState());
-    }};
-
-    private final Set<String> specialButtonsKeys = specialButtons.keySet().stream().map(Enum::name).collect(Collectors.toSet());
-
     private boolean isSpecialButton(ExtraKeyButton button) {
         return specialButtonsKeys.contains(button.getKey());
     }
-
-    private ScheduledExecutorService scheduledExecutor;
-    private PopupWindow popupWindow;
-    private int longPressCount;
 
     public boolean readSpecialButton(SpecialButton name) {
         SpecialButtonState state = specialButtons.get(name);
@@ -221,36 +209,26 @@ public final class ExtraKeysView extends GridLayout {
     }
 
     /**
-     * General util function to compute the longest column length in a matrix.
-     */
-    static int maximumLength(Object[][] matrix) {
-        int m = 0;
-        for (Object[] row : matrix)
-            m = Math.max(m, row.length);
-        return m;
-    }
-
-    /**
      * Reload the view given parameters in termux.properties
      *
      * @param infos matrix as defined in termux.properties extrakeys
-     * Can Contain The Strings CTRL ALT TAB FN ENTER LEFT RIGHT UP DOWN or normal strings
-     * Some aliases are possible like RETURN for ENTER, LT for LEFT and more (@see controlCharsAliases for the whole list).
-     * Any string of length > 1 in total Uppercase will print a warning
-     *
-     * Examples:
-     * "ENTER" will trigger the ENTER keycode
-     * "LEFT" will trigger the LEFT keycode and be displayed as "←"
-     * "→" will input a "→" character
-     * "−" will input a "−" character
-     * "-_-" will input the string "-_-"
+     *              Can Contain The Strings CTRL ALT TAB FN ENTER LEFT RIGHT UP DOWN or normal strings
+     *              Some aliases are possible like RETURN for ENTER, LT for LEFT and more (@see controlCharsAliases for the whole list).
+     *              Any string of length > 1 in total Uppercase will print a warning
+     *              <p>
+     *              Examples:
+     *              "ENTER" will trigger the ENTER keycode
+     *              "LEFT" will trigger the LEFT keycode and be displayed as "←"
+     *              "→" will input a "→" character
+     *              "−" will input a "−" character
+     *              "-_-" will input the string "-_-"
      */
     @SuppressLint("ClickableViewAccessibility")
     public void reload(ExtraKeysInfo infos) {
         if (infos == null)
             return;
 
-        for(SpecialButtonState state : specialButtons.values())
+        for (SpecialButtonState state : specialButtons.values())
             state.buttons = new ArrayList<>();
 
         removeAllViews();
@@ -396,6 +374,21 @@ public final class ExtraKeysView extends GridLayout {
 
     public void setTermuxTerminalSessionClient(TermuxTerminalSessionClient termuxTerminalSessionClient) {
         this.mTermuxTerminalSessionClient = termuxTerminalSessionClient;
+    }
+
+    public enum SpecialButton {
+        CTRL, ALT, FN
+    }
+
+    private static class SpecialButtonState {
+        boolean isOn = false;
+        boolean isActive = false;
+        List<Button> buttons = new ArrayList<>();
+
+        void setIsActive(boolean value) {
+            isActive = value;
+            buttons.forEach(button -> button.setTextColor(value ? INTERESTING_COLOR : TEXT_COLOR));
+        }
     }
 
 }

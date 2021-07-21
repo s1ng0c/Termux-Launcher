@@ -100,7 +100,6 @@ public class TermuxUtils {
     }
 
 
-
     /**
      * Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
      * app has been opened.
@@ -160,9 +159,9 @@ public class TermuxUtils {
      * must have been called by a different package like a plugin, so we return info for both packages
      * if {@code returnTermuxPackageInfoToo} is {@code true}.
      *
-     * @param currentPackageContext The context of current package.
+     * @param currentPackageContext      The context of current package.
      * @param returnTermuxPackageInfoToo If set to {@code true}, then will return info of the
-     * {@link TermuxConstants#TERMUX_PACKAGE_NAME} package as well if its different from current package.
+     *                                   {@link TermuxConstants#TERMUX_PACKAGE_NAME} package as well if its different from current package.
      * @return Returns the markdown {@link String}.
      */
     public static String getAppInfoMarkdownString(final Context currentPackageContext, final boolean returnTermuxPackageInfoToo) {
@@ -221,8 +220,8 @@ public class TermuxUtils {
 
         String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(context);
         if (signingCertificateSHA256Digest != null) {
-            AndroidUtils.appendPropertyToMarkdown(markdownString,"APK_RELEASE", getAPKRelease(signingCertificateSHA256Digest));
-            AndroidUtils.appendPropertyToMarkdown(markdownString,"SIGNING_CERTIFICATE_SHA256_DIGEST", signingCertificateSHA256Digest);
+            AndroidUtils.appendPropertyToMarkdown(markdownString, "APK_RELEASE", getAPKRelease(signingCertificateSHA256Digest));
+            AndroidUtils.appendPropertyToMarkdown(markdownString, "SIGNING_CERTIFICATE_SHA256_DIGEST", signingCertificateSHA256Digest);
         }
 
         return markdownString.toString();
@@ -311,10 +310,9 @@ public class TermuxUtils {
     }
 
 
-
     /**
      * Get a markdown {@link String} for APT info of the app.
-     *
+     * <p>
      * This will take a few seconds to run due to running {@code apt update} command.
      *
      * @param context The context for operations.

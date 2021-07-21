@@ -10,7 +10,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/** The {@link Class} that defines error messages and codes. */
+/**
+ * The {@link Class} that defines error messages and codes.
+ */
 public class Errno {
 
     public static final String TYPE = "Error";
@@ -20,15 +22,19 @@ public class Errno {
     public static final Errno ERRNO_CANCELLED = new Errno(TYPE, Activity.RESULT_CANCELED, "Cancelled");
     public static final Errno ERRNO_MINOR_FAILURES = new Errno(TYPE, Activity.RESULT_FIRST_USER, "Minor failure");
     public static final Errno ERRNO_FAILED = new Errno(TYPE, Activity.RESULT_FIRST_USER + 1, "Failed");
-
-    /** The errno type. */
-    protected String type;
-    /** The errno code. */
-    protected final int code;
-    /** The errno message. */
-    protected final String message;
-
     private static final String LOG_TAG = "Errno";
+    /**
+     * The errno code.
+     */
+    protected final int code;
+    /**
+     * The errno message.
+     */
+    protected final String message;
+    /**
+     * The errno type.
+     */
+    protected String type;
 
 
     public Errno(final String type, final int code, final String message) {
@@ -55,7 +61,6 @@ public class Errno {
     public int getCode() {
         return code;
     }
-
 
 
     public Error getError() {

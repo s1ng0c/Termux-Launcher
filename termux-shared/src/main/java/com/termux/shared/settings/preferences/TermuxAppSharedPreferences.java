@@ -7,26 +7,23 @@ import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
 
-import com.termux.shared.packages.PackageUtils;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.logger.Logger;
 import com.termux.shared.data.DataUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
+import com.termux.shared.termux.TermuxConstants;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class TermuxAppSharedPreferences {
 
+    private static final String LOG_TAG = "TermuxAppSharedPreferences";
     private final Context mContext;
     private final SharedPreferences mSharedPreferences;
-
-
     private int MIN_FONTSIZE;
     private int MAX_FONTSIZE;
     private int DEFAULT_FONTSIZE;
-
-    private static final String LOG_TAG = "TermuxAppSharedPreferences";
 
     private TermuxAppSharedPreferences(@Nonnull Context context) {
         mContext = context;
@@ -54,8 +51,8 @@ public class TermuxAppSharedPreferences {
     /**
      * Get the {@link Context} for a package name.
      *
-     * @param context The {@link Activity} to use to get the {@link Context} of the
-     *                {@link TermuxConstants#TERMUX_PACKAGE_NAME}.
+     * @param context        The {@link Activity} to use to get the {@link Context} of the
+     *                       {@link TermuxConstants#TERMUX_PACKAGE_NAME}.
      * @param exitAppOnError If {@code true} and failed to get package context, then a dialog will
      *                       be shown which when dismissed will exit the app.
      * @return Returns the {@link TermuxAppSharedPreferences}. This will {@code null} if an exception is raised.
@@ -74,7 +71,6 @@ public class TermuxAppSharedPreferences {
     }
 
 
-
     public boolean shouldShowTerminalToolbar() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_SHOW_TERMINAL_TOOLBAR, TERMUX_APP.DEFAULT_VALUE_SHOW_TERMINAL_TOOLBAR);
     }
@@ -90,7 +86,6 @@ public class TermuxAppSharedPreferences {
     }
 
 
-
     public boolean isTerminalMarginAdjustmentEnabled() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_MARGIN_ADJUSTMENT, TERMUX_APP.DEFAULT_TERMINAL_MARGIN_ADJUSTMENT);
     }
@@ -98,7 +93,6 @@ public class TermuxAppSharedPreferences {
     public void setTerminalMarginAdjustment(boolean value) {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_MARGIN_ADJUSTMENT, value, false);
     }
-
 
 
     public boolean isSoftKeyboardEnabled() {
@@ -118,7 +112,6 @@ public class TermuxAppSharedPreferences {
     }
 
 
-
     public boolean shouldKeepScreenOn() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_KEEP_SCREEN_ON, TERMUX_APP.DEFAULT_VALUE_KEEP_SCREEN_ON);
     }
@@ -126,7 +119,6 @@ public class TermuxAppSharedPreferences {
     public void setKeepScreenOn(boolean value) {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_KEEP_SCREEN_ON, value, false);
     }
-
 
 
     private void setFontVariables(Context context) {
@@ -166,7 +158,6 @@ public class TermuxAppSharedPreferences {
     }
 
 
-
     public String getCurrentSession() {
         return SharedPreferenceUtils.getString(mSharedPreferences, TERMUX_APP.KEY_CURRENT_SESSION, null);
     }
@@ -174,7 +165,6 @@ public class TermuxAppSharedPreferences {
     public void setCurrentSession(String value) {
         SharedPreferenceUtils.setString(mSharedPreferences, TERMUX_APP.KEY_CURRENT_SESSION, value, false);
     }
-
 
 
     public int getLogLevel() {
@@ -187,7 +177,6 @@ public class TermuxAppSharedPreferences {
     }
 
 
-
     public int getLastNotificationId() {
         return SharedPreferenceUtils.getInt(mSharedPreferences, TERMUX_APP.KEY_LAST_NOTIFICATION_ID, TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID);
     }
@@ -195,7 +184,6 @@ public class TermuxAppSharedPreferences {
     public void setLastNotificationId(int notificationId) {
         SharedPreferenceUtils.setInt(mSharedPreferences, TERMUX_APP.KEY_LAST_NOTIFICATION_ID, notificationId, false);
     }
-
 
 
     public boolean isTerminalViewKeyLoggingEnabled() {
@@ -207,7 +195,6 @@ public class TermuxAppSharedPreferences {
     }
 
 
-
     public boolean arePluginErrorNotificationsEnabled() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED);
     }
@@ -215,7 +202,6 @@ public class TermuxAppSharedPreferences {
     public void setPluginErrorNotificationsEnabled(boolean value) {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED, value, false);
     }
-
 
 
     public boolean areCrashReportNotificationsEnabled() {

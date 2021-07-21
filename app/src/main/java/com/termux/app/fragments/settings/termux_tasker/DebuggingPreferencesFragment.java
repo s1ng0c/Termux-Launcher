@@ -49,10 +49,9 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
 
 class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
+    private static DebuggingPreferencesDataStore mInstance;
     private final Context mContext;
     private final TermuxTaskerAppSharedPreferences mPreferences;
-
-    private static DebuggingPreferencesDataStore mInstance;
 
     private DebuggingPreferencesDataStore(Context context) {
         mContext = context;
@@ -65,7 +64,6 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
         }
         return mInstance;
     }
-
 
 
     @Override

@@ -1,6 +1,8 @@
 package com.termux.shared.models.errors;
 
-/** The {@link Class} that defines ResultSender error messages and codes. */
+/**
+ * The {@link Class} that defines ResultSender error messages and codes.
+ */
 public class ResultSenderErrno extends Errno {
 
     public static final String TYPE = "ResultSender Error";

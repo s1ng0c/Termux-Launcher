@@ -4,11 +4,11 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import com.termux.shared.models.errors.Error;
-import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.models.errors.Error;
 import com.termux.shared.packages.PackageUtils;
+import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 
 import java.io.File;
@@ -137,7 +137,7 @@ public class TermuxShellUtils {
     }
 
     public static void clearTermuxTMPDIR(boolean onlyIfExists) {
-        if(onlyIfExists && !FileUtils.directoryFileExists(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, false))
+        if (onlyIfExists && !FileUtils.directoryFileExists(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, false))
             return;
 
         Error error;

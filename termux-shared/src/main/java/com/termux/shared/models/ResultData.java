@@ -15,118 +15,26 @@ import java.util.List;
 
 public class ResultData implements Serializable {
 
-    /** The stdout of command. */
+    /**
+     * The stdout of command.
+     */
     public final StringBuilder stdout = new StringBuilder();
-    /** The stderr of command. */
+    /**
+     * The stderr of command.
+     */
     public final StringBuilder stderr = new StringBuilder();
-    /** The exit code of command. */
+    /**
+     * The exit code of command.
+     */
     public Integer exitCode;
 
-    /** The internal errors list of command. */
-    public List<Error> errorsList =  new ArrayList<>();
+    /**
+     * The internal errors list of command.
+     */
+    public List<Error> errorsList = new ArrayList<>();
 
 
     public ResultData() {
-    }
-
-
-    public void clearStdout() {
-        stdout.setLength(0);
-    }
-
-    public StringBuilder prependStdout(String message) {
-        return stdout.insert(0, message);
-    }
-
-    public StringBuilder prependStdoutLn(String message) {
-        return stdout.insert(0, message + "\n");
-    }
-
-    public StringBuilder appendStdout(String message) {
-        return stdout.append(message);
-    }
-
-    public StringBuilder appendStdoutLn(String message) {
-        return stdout.append(message).append("\n");
-    }
-
-
-    public void clearStderr() {
-        stderr.setLength(0);
-    }
-
-    public StringBuilder prependStderr(String message) {
-        return stderr.insert(0, message);
-    }
-
-    public StringBuilder prependStderrLn(String message) {
-        return stderr.insert(0, message + "\n");
-    }
-
-    public StringBuilder appendStderr(String message) {
-        return stderr.append(message);
-    }
-
-    public StringBuilder appendStderrLn(String message) {
-        return stderr.append(message).append("\n");
-    }
-
-
-    public synchronized boolean setStateFailed(@NonNull Error error) {
-        return setStateFailed(error.getType(), error.getCode(), error.getMessage(), null);
-    }
-
-    public synchronized boolean setStateFailed(@NonNull Error error, Throwable throwable) {
-        return setStateFailed(error.getType(), error.getCode(), error.getMessage(), Collections.singletonList(throwable));
-    }
-    public synchronized boolean setStateFailed(@NonNull Error error, List<Throwable> throwablesList) {
-        return setStateFailed(error.getType(), error.getCode(), error.getMessage(), throwablesList);
-    }
-
-    public synchronized boolean setStateFailed(int code, String message) {
-        return setStateFailed(null, code, message, null);
-    }
-
-    public synchronized boolean setStateFailed(int code, String message, Throwable throwable) {
-        return setStateFailed(null, code, message, Collections.singletonList(throwable));
-    }
-
-    public synchronized boolean setStateFailed(int code, String message, List<Throwable> throwablesList) {
-        return setStateFailed(null, code, message, throwablesList);
-    }
-
-    public synchronized boolean setStateFailed(String type, int code, String message, List<Throwable> throwablesList) {
-        if (errorsList == null)
-            errorsList =  new ArrayList<>();
-
-        Error error = new Error();
-        errorsList.add(error);
-
-        return error.setStateFailed(type, code, message, throwablesList);
-    }
-
-    public boolean isStateFailed() {
-        if (errorsList != null) {
-            for (Error error : errorsList)
-                if (error.isStateFailed())
-                    return true;
-        }
-
-        return false;
-    }
-
-    public int getErrCode() {
-        if (errorsList != null && errorsList.size() > 0)
-            return errorsList.get(errorsList.size() - 1).getCode();
-        else
-            return Errno.ERRNO_SUCCESS.getCode();
-    }
-
-
-    @NonNull
-    @Override
-    public String toString() {
-        return getResultDataLogString(this, true);
     }
 
     /**
@@ -148,26 +56,6 @@ public class ResultData implements Serializable {
         logString.append("\n\n").append(getErrorsListLogString(resultData));
 
         return logString.toString();
-    }
-
-
-
-    public String getStdoutLogString() {
-        if (stdout.toString().isEmpty())
-            return Logger.getSingleLineLogStringEntry("Stdout", null, "-");
-        else
-            return Logger.getMultiLineLogStringEntry("Stdout", DataUtils.getTruncatedCommandOutput(stdout.toString(), Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD / 5, false, false, true), "-");
-    }
-
-    public String getStderrLogString() {
-        if (stderr.toString().isEmpty())
-            return Logger.getSingleLineLogStringEntry("Stderr", null, "-");
-        else
-            return Logger.getMultiLineLogStringEntry("Stderr", DataUtils.getTruncatedCommandOutput(stderr.toString(), Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD / 5, false, false, true), "-");
-    }
-
-    public String getExitCodeLogString() {
-        return Logger.getSingleLineLogStringEntry("Exit Code", exitCode, "-");
     }
 
     public static String getErrorsListLogString(final ResultData resultData) {
@@ -251,6 +139,121 @@ public class ResultData implements Serializable {
         }
 
         return minimalString.toString();
+    }
+
+    public void clearStdout() {
+        stdout.setLength(0);
+    }
+
+    public StringBuilder prependStdout(String message) {
+        return stdout.insert(0, message);
+    }
+
+    public StringBuilder prependStdoutLn(String message) {
+        return stdout.insert(0, message + "\n");
+    }
+
+    public StringBuilder appendStdout(String message) {
+        return stdout.append(message);
+    }
+
+    public StringBuilder appendStdoutLn(String message) {
+        return stdout.append(message).append("\n");
+    }
+
+    public void clearStderr() {
+        stderr.setLength(0);
+    }
+
+    public StringBuilder prependStderr(String message) {
+        return stderr.insert(0, message);
+    }
+
+    public StringBuilder prependStderrLn(String message) {
+        return stderr.insert(0, message + "\n");
+    }
+
+    public StringBuilder appendStderr(String message) {
+        return stderr.append(message);
+    }
+
+    public StringBuilder appendStderrLn(String message) {
+        return stderr.append(message).append("\n");
+    }
+
+    public synchronized boolean setStateFailed(@NonNull Error error) {
+        return setStateFailed(error.getType(), error.getCode(), error.getMessage(), null);
+    }
+
+    public synchronized boolean setStateFailed(@NonNull Error error, Throwable throwable) {
+        return setStateFailed(error.getType(), error.getCode(), error.getMessage(), Collections.singletonList(throwable));
+    }
+
+    public synchronized boolean setStateFailed(@NonNull Error error, List<Throwable> throwablesList) {
+        return setStateFailed(error.getType(), error.getCode(), error.getMessage(), throwablesList);
+    }
+
+    public synchronized boolean setStateFailed(int code, String message) {
+        return setStateFailed(null, code, message, null);
+    }
+
+    public synchronized boolean setStateFailed(int code, String message, Throwable throwable) {
+        return setStateFailed(null, code, message, Collections.singletonList(throwable));
+    }
+
+    public synchronized boolean setStateFailed(int code, String message, List<Throwable> throwablesList) {
+        return setStateFailed(null, code, message, throwablesList);
+    }
+
+    public synchronized boolean setStateFailed(String type, int code, String message, List<Throwable> throwablesList) {
+        if (errorsList == null)
+            errorsList = new ArrayList<>();
+
+        Error error = new Error();
+        errorsList.add(error);
+
+        return error.setStateFailed(type, code, message, throwablesList);
+    }
+
+    public boolean isStateFailed() {
+        if (errorsList != null) {
+            for (Error error : errorsList)
+                if (error.isStateFailed())
+                    return true;
+        }
+
+        return false;
+    }
+
+    public int getErrCode() {
+        if (errorsList != null && errorsList.size() > 0)
+            return errorsList.get(errorsList.size() - 1).getCode();
+        else
+            return Errno.ERRNO_SUCCESS.getCode();
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return getResultDataLogString(this, true);
+    }
+
+    public String getStdoutLogString() {
+        if (stdout.toString().isEmpty())
+            return Logger.getSingleLineLogStringEntry("Stdout", null, "-");
+        else
+            return Logger.getMultiLineLogStringEntry("Stdout", DataUtils.getTruncatedCommandOutput(stdout.toString(), Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD / 5, false, false, true), "-");
+    }
+
+    public String getStderrLogString() {
+        if (stderr.toString().isEmpty())
+            return Logger.getSingleLineLogStringEntry("Stderr", null, "-");
+        else
+            return Logger.getMultiLineLogStringEntry("Stderr", DataUtils.getTruncatedCommandOutput(stderr.toString(), Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD / 5, false, false, true), "-");
+    }
+
+    public String getExitCodeLogString() {
+        return Logger.getSingleLineLogStringEntry("Exit Code", exitCode, "-");
     }
 
 }

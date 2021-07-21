@@ -36,15 +36,14 @@ public class PermissionUtils {
         if (permissions == null) return false;
 
         int result;
-        for (String p:permissions) {
-            result = ContextCompat.checkSelfPermission(context,p);
+        for (String p : permissions) {
+            result = ContextCompat.checkSelfPermission(context, p);
             if (result != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
         }
         return true;
     }
-
 
 
     public static void requestPermission(Activity activity, String permission, int requestCode) {
@@ -57,9 +56,13 @@ public class PermissionUtils {
 
         int result;
         Logger.showToast(activity, activity.getString(R.string.message_sudo_please_grant_permissions), true);
-        try {Thread.sleep(1000);} catch (InterruptedException e) {e.printStackTrace();}
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-        for (String permission:permissions) {
+        for (String permission : permissions) {
             result = ContextCompat.checkSelfPermission(activity, permission);
             if (result != PackageManager.PERMISSION_GRANTED) {
                 Logger.logDebug(LOG_TAG, "Requesting Permissions: " + Arrays.toString(permissions));
@@ -67,7 +70,6 @@ public class PermissionUtils {
             }
         }
     }
-
 
 
     public static boolean checkDisplayOverOtherAppsPermission(Context context) {
@@ -81,7 +83,7 @@ public class PermissionUtils {
 
     public static boolean validateDisplayOverOtherAppsPermissionForPostAndroid10(Context context, boolean logResults) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true;
-        
+
         if (!PermissionUtils.checkDisplayOverOtherAppsPermission(context)) {
             if (logResults)
                 Logger.logWarn(LOG_TAG, context.getPackageName() + " does not have Display over other apps (SYSTEM_ALERT_WINDOW) permission");
@@ -92,7 +94,6 @@ public class PermissionUtils {
             return true;
         }
     }
-
 
 
     public static boolean checkIfBatteryOptimizationsDisabled(Context context) {

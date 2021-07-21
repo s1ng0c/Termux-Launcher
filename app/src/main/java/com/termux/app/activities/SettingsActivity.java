@@ -10,10 +10,10 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.termux.R;
-import com.termux.shared.activities.ReportActivity;
-import com.termux.shared.models.ReportInfo;
 import com.termux.app.models.UserAction;
+import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.interact.ShareUtils;
+import com.termux.shared.models.ReportInfo;
 import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.settings.preferences.TermuxTaskerAppSharedPreferences;
 import com.termux.shared.termux.AndroidUtils;
@@ -79,7 +79,7 @@ public class SettingsActivity extends AppCompatActivity {
                             StringBuilder aboutString = new StringBuilder();
                             aboutString.append(TermuxUtils.getAppInfoMarkdownString(context, false));
 
-                            String termuxPluginAppsInfo =  TermuxUtils.getTermuxPluginAppsInfoMarkdownString(context);
+                            String termuxPluginAppsInfo = TermuxUtils.getTermuxPluginAppsInfoMarkdownString(context);
                             if (termuxPluginAppsInfo != null)
                                 aboutString.append("\n\n").append(termuxPluginAppsInfo);
 

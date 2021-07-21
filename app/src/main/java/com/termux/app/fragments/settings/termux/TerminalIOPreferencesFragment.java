@@ -29,10 +29,9 @@ public class TerminalIOPreferencesFragment extends PreferenceFragmentCompat {
 
 class TerminalIOPreferencesDataStore extends PreferenceDataStore {
 
+    private static TerminalIOPreferencesDataStore mInstance;
     private final Context mContext;
     private final TermuxAppSharedPreferences mPreferences;
-
-    private static TerminalIOPreferencesDataStore mInstance;
 
     private TerminalIOPreferencesDataStore(Context context) {
         mContext = context;
@@ -47,7 +46,6 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
     }
 
 
-
     @Override
     public void putBoolean(String key, boolean value) {
         if (mPreferences == null) return;
@@ -55,7 +53,7 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
 
         switch (key) {
             case "soft_keyboard_enabled":
-                    mPreferences.setSoftKeyboardEnabled(value);
+                mPreferences.setSoftKeyboardEnabled(value);
                 break;
             case "soft_keyboard_enabled_only_if_no_hardware":
                 mPreferences.setSoftKeyboardEnabledOnlyIfNoHardware(value);

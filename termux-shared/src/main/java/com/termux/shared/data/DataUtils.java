@@ -4,10 +4,6 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
-import java.util.LinkedHashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class DataUtils {
 
     public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 100 * 1024; // 100KB
@@ -47,12 +43,12 @@ public class DataUtils {
     /**
      * Replace a sub string in each item of a {@link String[]}.
      *
-     * @param array The {@link String[]} to replace in.
-     * @param find The sub string to replace.
+     * @param array   The {@link String[]} to replace in.
+     * @param find    The sub string to replace.
      * @param replace The sub string to replace with.
      */
     public static void replaceSubStringsInStringArrayItems(String[] array, String find, String replace) {
-        if(array == null || array.length == 0) return;
+        if (array == null || array.length == 0) return;
 
         for (int i = 0; i < array.length; i++) {
             array[i] = array[i].replace(find, replace);
@@ -63,7 +59,7 @@ public class DataUtils {
      * Get the {@code float} from a {@link String}.
      *
      * @param value The {@link String} value.
-     * @param def The default value if failed to read a valid value.
+     * @param def   The default value if failed to read a valid value.
      * @return Returns the {@code float} value after parsing the {@link String} value, otherwise
      * returns default if failed to read a valid value, like in case of an exception.
      */
@@ -72,8 +68,7 @@ public class DataUtils {
 
         try {
             return Float.parseFloat(value);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return def;
         }
     }
@@ -82,7 +77,7 @@ public class DataUtils {
      * Get the {@code int} from a {@link String}.
      *
      * @param value The {@link String} value.
-     * @param def The default value if failed to read a valid value.
+     * @param def   The default value if failed to read a valid value.
      * @return Returns the {@code int} value after parsing the {@link String} value, otherwise
      * returns default if failed to read a valid value, like in case of an exception.
      */
@@ -91,8 +86,7 @@ public class DataUtils {
 
         try {
             return Integer.parseInt(value);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return def;
         }
     }
@@ -117,8 +111,8 @@ public class DataUtils {
      * Get an {@code int} from {@link Bundle} that is stored as a {@link String}.
      *
      * @param bundle The {@link Bundle} to get the value from.
-     * @param key The key for the value.
-     * @param def The default value if failed to read a valid value.
+     * @param key    The key for the value.
+     * @param def    The default value if failed to read a valid value.
      * @return Returns the {@code int} value after parsing the {@link String} value stored in
      * {@link Bundle}, otherwise returns default if failed to read a valid value,
      * like in case of an exception.
@@ -127,7 +121,6 @@ public class DataUtils {
         if (bundle == null) return def;
         return getIntFromString(bundle.getString(key, Integer.toString(def)), def);
     }
-
 
 
     /**
@@ -148,19 +141,20 @@ public class DataUtils {
     }
 
 
-
     /**
      * Get the object itself if it is not {@code null}, otherwise default.
      *
      * @param object The {@link Object} to check.
-     * @param def The default {@link Object}.
+     * @param def    The default {@link Object}.
      * @return Returns {@code object} if it is not {@code null}, otherwise returns {@code def}.
      */
     public static <T> T getDefaultIfNull(@Nullable T object, @Nullable T def) {
         return (object == null) ? def : object;
     }
 
-    /** Check if a string is null or empty. */
+    /**
+     * Check if a string is null or empty.
+     */
     public static boolean isNullOrEmpty(String string) {
         return string == null || string.isEmpty();
     }

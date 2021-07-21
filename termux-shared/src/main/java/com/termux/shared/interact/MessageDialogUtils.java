@@ -15,18 +15,18 @@ public class MessageDialogUtils {
     /**
      * Show a message in a dialog
      *
-     * @param context The {@link Context} to use to start the dialog. An {@link Activity} {@link Context}
-     *                must be passed, otherwise exceptions will be thrown.
-     * @param titleText The title text of the dialog.
+     * @param context     The {@link Context} to use to start the dialog. An {@link Activity} {@link Context}
+     *                    must be passed, otherwise exceptions will be thrown.
+     * @param titleText   The title text of the dialog.
      * @param messageText The message text of the dialog.
-     * @param onDismiss The {@link DialogInterface.OnDismissListener} to run when dialog is dismissed.
+     * @param onDismiss   The {@link DialogInterface.OnDismissListener} to run when dialog is dismissed.
      */
     public static void showMessage(Context context, String titleText, String messageText, final DialogInterface.OnDismissListener onDismiss) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.Theme_AppCompat_Light_Dialog)
             .setPositiveButton(android.R.string.ok, null);
 
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.dialog_show_message, null);
         if (view != null) {
             builder.setView(view);

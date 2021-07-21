@@ -47,7 +47,7 @@ android {
         splits {
             abi {
                 enable gradle.startParameter.taskNames.any { it.contains("Debug") }
-                reset ()
+                reset()
                 include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
                 universalApk true
             }
@@ -179,9 +179,9 @@ task downloadBootstraps() {
     doLast {
         def version = "2021.06.30-r1"
         downloadBootstrap("aarch64", "ce56ce9a4e8845bd1d35cc2695bbdd636c72625ee10ce21c9b98ab38ebbee5ab", version)
-        downloadBootstrap("arm",     "537e81951c7d3d3f3def9ce6778e1032457488e21edb2c037a1e0e680c39e747", version)
-        downloadBootstrap("i686",    "3c2ca858c0225671c00c44ac182e31819ffa93ec624e95e02824e7d6d30ca1b4", version)
-        downloadBootstrap("x86_64",  "93c50d36b45bca42bb014395e8e184e5b540adcad5d4e215f7e64ebf0d655d2b", version)
+        downloadBootstrap("arm", "537e81951c7d3d3f3def9ce6778e1032457488e21edb2c037a1e0e680c39e747", version)
+        downloadBootstrap("i686", "3c2ca858c0225671c00c44ac182e31819ffa93ec624e95e02824e7d6d30ca1b4", version)
+        downloadBootstrap("x86_64", "93c50d36b45bca42bb014395e8e184e5b540adcad5d4e215f7e64ebf0d655d2b", version)
     }
 }
 

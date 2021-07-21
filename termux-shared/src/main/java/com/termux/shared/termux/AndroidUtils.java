@@ -33,23 +33,23 @@ public class AndroidUtils {
     public static String getAppInfoMarkdownString(@NonNull final Context context) {
         StringBuilder markdownString = new StringBuilder();
 
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"APP_NAME", PackageUtils.getAppNameForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"PACKAGE_NAME", PackageUtils.getPackageNameForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_NAME", PackageUtils.getVersionNameForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_CODE", PackageUtils.getVersionCodeForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_DEBUG_BUILD", PackageUtils.isAppForPackageADebugBuild(context));
+        AndroidUtils.appendPropertyToMarkdown(markdownString, "APP_NAME", PackageUtils.getAppNameForPackage(context));
+        AndroidUtils.appendPropertyToMarkdown(markdownString, "PACKAGE_NAME", PackageUtils.getPackageNameForPackage(context));
+        AndroidUtils.appendPropertyToMarkdown(markdownString, "VERSION_NAME", PackageUtils.getVersionNameForPackage(context));
+        AndroidUtils.appendPropertyToMarkdown(markdownString, "VERSION_CODE", PackageUtils.getVersionCodeForPackage(context));
+        AndroidUtils.appendPropertyToMarkdown(markdownString, "TARGET_SDK", PackageUtils.getTargetSDKForPackage(context));
+        AndroidUtils.appendPropertyToMarkdown(markdownString, "IS_DEBUG_BUILD", PackageUtils.isAppForPackageADebugBuild(context));
 
         String filesDir = context.getFilesDir().getAbsolutePath();
         if (!filesDir.equals("/data/user/0/" + context.getPackageName() + "/files") &&
             !filesDir.equals("/data/data/" + context.getPackageName() + "/files"))
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"FILES_DIR", filesDir);
+            AndroidUtils.appendPropertyToMarkdown(markdownString, "FILES_DIR", filesDir);
 
         Long userId = PackageUtils.getSerialNumberForCurrentUser(context);
         if (userId == null || userId != 0)
-            AndroidUtils.appendPropertyToMarkdown(markdownString,"USER_ID", userId);
+            AndroidUtils.appendPropertyToMarkdown(markdownString, "USER_ID", userId);
 
-        AndroidUtils.appendPropertyToMarkdownIfSet(markdownString,"PROFILE_OWNER", PackageUtils.getProfileOwnerPackageNameForUser(context));
+        AndroidUtils.appendPropertyToMarkdownIfSet(markdownString, "PROFILE_OWNER", PackageUtils.getProfileOwnerPackageNameForUser(context));
 
         return markdownString.toString();
     }
@@ -70,7 +70,7 @@ public class AndroidUtils {
         markdownString.append("## Device Info");
 
         markdownString.append("\n\n### Software\n");
-        appendPropertyToMarkdown(markdownString,"OS_VERSION", getSystemPropertyWithAndroidAPI("os.version"));
+        appendPropertyToMarkdown(markdownString, "OS_VERSION", getSystemPropertyWithAndroidAPI("os.version"));
         appendPropertyToMarkdown(markdownString, "SDK_INT", Build.VERSION.SDK_INT);
         // If its a release version
         if ("REL".equals(Build.VERSION.CODENAME))
@@ -101,7 +101,6 @@ public class AndroidUtils {
 
         return markdownString.toString();
     }
-
 
 
     public static Properties getSystemProperties() {
@@ -174,17 +173,14 @@ public class AndroidUtils {
     }
 
 
-
     public static String getCurrentTimeStamp() {
-        @SuppressLint("SimpleDateFormat")
-        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        @SuppressLint("SimpleDateFormat") final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         return df.format(new Date());
     }
 
     public static String getCurrentMilliSecondLocalTimeStamp() {
-        @SuppressLint("SimpleDateFormat")
-        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS");
+        @SuppressLint("SimpleDateFormat") final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS");
         df.setTimeZone(TimeZone.getDefault());
         return df.format(new Date());
     }

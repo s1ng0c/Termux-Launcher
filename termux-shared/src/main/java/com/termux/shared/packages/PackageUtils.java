@@ -28,7 +28,7 @@ public class PackageUtils {
     /**
      * Get the {@link Context} for the package name.
      *
-     * @param context The {@link Context} to use to get the {@link Context} of the {@code packageName}.
+     * @param context     The {@link Context} to use to get the {@link Context} of the {@code packageName}.
      * @param packageName The package name whose {@link Context} to get.
      * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
      */
@@ -45,8 +45,8 @@ public class PackageUtils {
     /**
      * Get the {@link Context} for a package name.
      *
-     * @param context The {@link Context} to use to get the {@link Context} of the {@code packageName}.
-     * @param packageName The package name whose {@link Context} to get.
+     * @param context        The {@link Context} to use to get the {@link Context} of the {@code packageName}.
+     * @param packageName    The package name whose {@link Context} to get.
      * @param exitAppOnError If {@code true} and failed to get package context, then a dialog will
      *                       be shown which when dismissed will exit the app.
      * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
@@ -74,14 +74,14 @@ public class PackageUtils {
      * @return Returns the {@link PackageInfo}. This will be {@code null} if an exception is raised.
      */
     public static PackageInfo getPackageInfoForPackage(@NonNull final Context context) {
-            return getPackageInfoForPackage(context, 0);
+        return getPackageInfoForPackage(context, 0);
     }
 
     /**
      * Get the {@link PackageInfo} for the package associated with the {@code context}.
      *
      * @param context The {@link Context} for the package.
-     * @param flags The flags to pass to {@link PackageManager#getPackageInfo(String, int)}.
+     * @param flags   The flags to pass to {@link PackageManager#getPackageInfo(String, int)}.
      * @return Returns the {@link PackageInfo}. This will be {@code null} if an exception is raised.
      */
     @Nullable
@@ -130,7 +130,7 @@ public class PackageUtils {
      * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
      */
     public static Boolean isAppForPackageADebugBuild(@NonNull final Context context) {
-        return ( 0 != ( context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE ) );
+        return (0 != (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
     }
 
     /**
@@ -173,13 +173,13 @@ public class PackageUtils {
     public static String getSigningCertificateSHA256DigestForPackage(@NonNull final Context context) {
         try {
             /*
-            * Todo: We may need AndroidManifest queries entries if package is installed but with a different signature on android 11
-            * https://developer.android.com/training/package-visibility
-            * Need a device that allows (manual) installation of apk with mismatched signature of
-            * sharedUserId apps to test. Currently, if its done, PackageManager just doesn't load
-            * the package and removes its apk automatically if its installed as a user app instead of system app
-            * W/PackageManager: Failed to parse /path/to/com.termux.tasker.apk: Signature mismatch for shared user: SharedUserSetting{xxxxxxx com.termux/10xxx}
-            */
+             * Todo: We may need AndroidManifest queries entries if package is installed but with a different signature on android 11
+             * https://developer.android.com/training/package-visibility
+             * Need a device that allows (manual) installation of apk with mismatched signature of
+             * sharedUserId apps to test. Currently, if its done, PackageManager just doesn't load
+             * the package and removes its apk automatically if its installed as a user app instead of system app
+             * W/PackageManager: Failed to parse /path/to/com.termux.tasker.apk: Signature mismatch for shared user: SharedUserSetting{xxxxxxx com.termux/10xxx}
+             */
             PackageInfo packageInfo = getPackageInfoForPackage(context, PackageManager.GET_SIGNATURES);
             if (packageInfo == null) return null;
             return DataUtils.bytesToHex(MessageDigest.getInstance("SHA-256").digest(packageInfo.signatures[0].toByteArray()));
@@ -187,7 +187,6 @@ public class PackageUtils {
             return null;
         }
     }
-
 
 
     /**
@@ -227,10 +226,10 @@ public class PackageUtils {
         DevicePolicyManager devicePolicyManager = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         if (devicePolicyManager == null) return null;
         List<ComponentName> activeAdmins = devicePolicyManager.getActiveAdmins();
-        if (activeAdmins != null){
-            for (ComponentName admin:activeAdmins){
+        if (activeAdmins != null) {
+            for (ComponentName admin : activeAdmins) {
                 String packageName = admin.getPackageName();
-                if(devicePolicyManager.isProfileOwnerApp(packageName))
+                if (devicePolicyManager.isProfileOwnerApp(packageName))
                     return packageName;
             }
         }

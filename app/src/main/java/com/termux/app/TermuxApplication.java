@@ -3,8 +3,8 @@ package com.termux.app;
 import android.app.Application;
 
 import com.termux.shared.crash.TermuxCrashUtils;
-import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 
 
 public class TermuxApplication extends Application {

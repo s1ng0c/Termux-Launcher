@@ -9,11 +9,11 @@ import android.provider.OpenableColumns;
 import android.util.Patterns;
 
 import com.termux.R;
+import com.termux.app.TermuxService;
 import com.termux.shared.interact.TextInputDialogUtils;
+import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.app.TermuxService;
-import com.termux.shared.logger.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -30,7 +30,7 @@ public class TermuxFileReceiverActivity extends Activity {
     static final String TERMUX_RECEIVEDIR = TermuxConstants.TERMUX_FILES_DIR_PATH + "/home/downloads";
     static final String EDITOR_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-file-editor";
     static final String URL_OPENER_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-url-opener";
-
+    private static final String LOG_TAG = "TermuxFileReceiverActivity";
     /**
      * If the activity should be finished when the name input dialog is dismissed. This is disabled
      * before showing an error dialog, since the act of showing the error dialog will cause the
@@ -38,8 +38,6 @@ public class TermuxFileReceiverActivity extends Activity {
      * when showing the error dialog.
      */
     boolean mFinishOnDismissNameDialog = true;
-
-    private static final String LOG_TAG = "TermuxFileReceiverActivity";
 
     static boolean isSharedTextAnUrl(String sharedText) {
         return Patterns.WEB_URL.matcher(sharedText).matches()
@@ -119,28 +117,28 @@ public class TermuxFileReceiverActivity extends Activity {
 
     void promptNameAndSave(final InputStream in, final String attachmentFileName) {
         TextInputDialogUtils.textInput(this, R.string.title_file_received, attachmentFileName, R.string.action_file_received_edit, text -> {
-            File outFile = saveStreamWithName(in, text);
-            if (outFile == null) return;
+                File outFile = saveStreamWithName(in, text);
+                if (outFile == null) return;
 
-            final File editorProgramFile = new File(EDITOR_PROGRAM);
-            if (!editorProgramFile.isFile()) {
-                showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
-                    + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
-                return;
-            }
+                final File editorProgramFile = new File(EDITOR_PROGRAM);
+                if (!editorProgramFile.isFile()) {
+                    showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
+                        + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
+                    return;
+                }
 
-            // Do this for the user if necessary:
-            //noinspection ResultOfMethodCallIgnored
-            editorProgramFile.setExecutable(true);
+                // Do this for the user if necessary:
+                //noinspection ResultOfMethodCallIgnored
+                editorProgramFile.setExecutable(true);
 
-            final Uri scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
+                final Uri scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
 
-            Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
-            executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-            executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
-            startService(executeIntent);
-            finish();
-        },
+                Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
+                executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
+                executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
+                startService(executeIntent);
+                finish();
+            },
             R.string.action_file_received_open_directory, text -> {
                 if (saveStreamWithName(in, text) == null) return;
 
